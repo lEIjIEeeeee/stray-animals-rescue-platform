@@ -14,6 +14,6 @@ import org.springframework.stereotype.Service;
 @AllArgsConstructor
 public class CommentService {
 
-    private  CommentMapper commentMapper;
+    private CommentMapper commentMapper;
 
 }

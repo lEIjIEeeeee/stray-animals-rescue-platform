@@ -12,6 +12,7 @@ import com.sarp.core.module.post.model.request.PostAuditRequest;
 import com.sarp.core.module.post.model.request.PostCloseRequest;
 import com.sarp.core.module.post.model.request.PostDeleteRequest;
 import com.sarp.core.module.post.model.response.PlatformPostResponse;
+import com.sarp.core.module.post.model.dto.PostCloseReasonDTO;
 import com.sarp.core.module.post.service.PostService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -19,6 +20,8 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import javax.validation.constraints.NotBlank;
 
 /**
  * @date 2024/1/30 11:51
@@ -46,8 +49,13 @@ public class PlatformPostController {
         return HttpResult.success(postResponsePageVO);
     }
 
-    //TODO 查看详情
+    //TODO 查看帖子详情
 
+    @ApiOperation(value = "查看帖子关闭原因")
+    @GetMapping("/getCloseReason")
+    public HttpResult<PostCloseReasonDTO> getCloseReason(@RequestParam @NotBlank String id) {
+        return HttpResult.success(postService.getCloseReason(id));
+    }
 
     @ApiOperation(value = "后台-审核帖子")
     @PostMapping("/audit")

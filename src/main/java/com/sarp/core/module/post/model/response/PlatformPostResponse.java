@@ -21,4 +21,7 @@ public class PlatformPostResponse extends PostResponse {
     @ApiModelProperty(value = "审核状态")
     private Integer status;
 
+    @ApiModelProperty(value = "审核备注")
+    private String auditRemark;
+
 }

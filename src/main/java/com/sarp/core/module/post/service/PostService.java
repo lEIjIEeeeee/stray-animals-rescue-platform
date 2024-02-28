@@ -17,6 +17,7 @@ import com.sarp.core.module.common.model.entity.BaseDO;
 import com.sarp.core.module.post.dao.PostMapper;
 import com.sarp.core.module.post.enums.PostSearchTypeEnum;
 import com.sarp.core.module.post.enums.PostStatusEnum;
+import com.sarp.core.module.post.model.dto.PostCloseReasonDTO;
 import com.sarp.core.module.post.model.entity.Post;
 import com.sarp.core.module.post.model.request.*;
 import com.sarp.core.util.JavaBeanUtils;
@@ -134,6 +135,12 @@ public class PostService {
         }
 
         return postMapper.selectPage(PageUtils.createPage(request), queryWrapper);
+    }
+
+    public PostCloseReasonDTO getCloseReason(String id) {
+        Post post = getByIdWithExp(id);
+        return PostCloseReasonDTO.builder()
+                                 .id(id).closeReason(post.getCloseReason()).build();
     }
 
     @Transactional(rollbackFor = Exception.class)

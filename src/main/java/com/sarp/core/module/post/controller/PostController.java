@@ -42,6 +42,7 @@ public class PostController {
     @PostMapping("/submitPost")
     public HttpResult<Void> submitPost(@RequestBody @Validated(SubmitPostRequest.Add.class)
                                                SubmitPostRequest request) {
+
         postService.submitPost(request);
         return HttpResult.success();
     }

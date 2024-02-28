@@ -58,13 +58,6 @@ public class Post extends BaseDO {
     private Integer bizType;
 
     /**
-     * 发起方式 1-个人 2-平台
-     */
-    @TableField(value = "launch_type")
-    @ApiModelProperty(value="发起方式 1-个人 2-平台")
-    private Integer launchType;
-
-    /**
      * 状态 1-待审核 2-审核通过 3-审核拒绝 4-已关闭
      */
     @TableField(value = "`status`")
@@ -126,5 +119,12 @@ public class Post extends BaseDO {
     @TableField(value = "audit_remark")
     @ApiModelProperty(value="审核备注")
     private String auditRemark;
+
+    /**
+     * 关闭原因
+     */
+    @TableField(value = "close_reason")
+    @ApiModelProperty(value = "关闭原因")
+    private String closeReason;
 
 }

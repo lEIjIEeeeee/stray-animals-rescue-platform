@@ -34,7 +34,7 @@ public class ContextUtils {
     public static String getCurrentUserId() {
         return Optional.ofNullable(getCurrentUser())
                        .map(LoginUser::getId)
-                       .orElseThrow(() -> new BizException(HttpResultCode.SYSTEM_ERROR, "当前用户ID信息获取失败！"));
+                       .orElseThrow(() -> new BizException(HttpResultCode.SYSTEM_ERROR, "当前用户ID信息获取失败"));
     }
 
     public static void clear() {

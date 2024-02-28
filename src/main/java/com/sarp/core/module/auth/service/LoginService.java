@@ -62,7 +62,7 @@ public class LoginService {
     @Transactional(rollbackFor = Exception.class)
     public void register(RegisterRequest request) {
         if (ObjectUtil.notEqual(request.getPassword(), request.getConfirmPassword())) {
-            throw new BizException(HttpResultCode.BIZ_EXCEPTION, "两次密码不一致！");
+            throw new BizException(HttpResultCode.BIZ_EXCEPTION, "两次密码不一致");
         }
 
         String salt = AuthNoGenerateUtils.generateSalt();

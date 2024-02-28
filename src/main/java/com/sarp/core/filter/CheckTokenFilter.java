@@ -114,13 +114,13 @@ public class CheckTokenFilter extends OncePerRequestFilter {
 
     private void checkLoginUserInfo(LoginUser loginUser) {
         if (StrUtil.isBlank(loginUser.getId())) {
-            throw new BizException(HttpResultCode.BIZ_DATA_EXCEPTION, "登录用户没有用户ID信息！");
+            throw new BizException(HttpResultCode.BIZ_DATA_EXCEPTION, "登录用户没有用户ID信息");
         }
         if (StrUtil.isBlank(loginUser.getAccount())) {
-            throw new BizException(HttpResultCode.BIZ_DATA_EXCEPTION, "登录用户没有登录账号信息！");
+            throw new BizException(HttpResultCode.BIZ_DATA_EXCEPTION, "登录用户没有登录账号信息");
         }
         if (StrUtil.isBlank(loginUser.getPhone())) {
-            throw new BizException(HttpResultCode.BIZ_DATA_EXCEPTION, "登录用户没有手机号信息！");
+            throw new BizException(HttpResultCode.BIZ_DATA_EXCEPTION, "登录用户没有手机号信息");
         }
     }
 

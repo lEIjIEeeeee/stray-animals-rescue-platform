@@ -11,16 +11,14 @@ import com.sarp.core.exception.BizException;
 import com.sarp.core.module.animal.model.entity.Animal;
 import com.sarp.core.module.animal.service.AnimalService;
 import com.sarp.core.module.category.service.CategoryService;
+import com.sarp.core.module.common.enums.AuditResultEnum;
 import com.sarp.core.module.common.enums.HttpResultCode;
 import com.sarp.core.module.common.model.entity.BaseDO;
 import com.sarp.core.module.post.dao.PostMapper;
-import com.sarp.core.module.post.enums.PostLaunchTypeEnum;
 import com.sarp.core.module.post.enums.PostSearchTypeEnum;
 import com.sarp.core.module.post.enums.PostStatusEnum;
 import com.sarp.core.module.post.model.entity.Post;
-import com.sarp.core.module.post.model.request.PlatformPostQueryRequest;
-import com.sarp.core.module.post.model.request.PostQueryRequest;
-import com.sarp.core.module.post.model.request.SubmitPostRequest;
+import com.sarp.core.module.post.model.request.*;
 import com.sarp.core.util.JavaBeanUtils;
 import com.sarp.core.util.PageUtils;
 import lombok.AllArgsConstructor;
@@ -49,13 +47,13 @@ public class PostService {
     @Transactional(rollbackFor = Exception.class)
     public void submitPost(SubmitPostRequest request) {
         checkAnimalOwner(request, ContextUtils.getCurrentUserId());
+        throw new BizException(HttpResultCode.BIZ_EXCEPTION);
 
-        Post post = JavaBeanUtils.map(request, Post.class, BaseDO.ID);
-        post.setBizType(request.getBizType().getCode())
-            .setLaunchType(PostLaunchTypeEnum.PERSON.getCode())
-            .setStatus(PostStatusEnum.AUDIT_WAIT.getCode());
-
-        postMapper.insert(post);
+//        Post post = JavaBeanUtils.map(request, Post.class, BaseDO.ID);
+//        post.setBizType(request.getBizType().getCode())
+//            .setStatus(PostStatusEnum.AUDIT_WAIT.getCode());
+//
+//        postMapper.insert(post);
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -78,17 +76,17 @@ public class PostService {
         if (StrUtil.isNotBlank(request.getAnimalId())) {
             Animal animal = animalService.getByIdWithExp(request.getAnimalId());
             if (ObjectUtil.notEqual(animal.getOwnerId(), userId)) {
-                throw new BizException(HttpResultCode.BIZ_EXCEPTION, "当前选择不是你名下的宠物，没有操作权限！");
+                throw new BizException(HttpResultCode.BIZ_EXCEPTION, "当前选择不是你名下的宠物，没有操作权限");
             }
         }
     }
 
     private void checkPostInfo(Post post, String userId) {
         if (ObjectUtil.notEqual(PostStatusEnum.AUDIT_REJECT.getCode(), post.getStatus())) {
-            throw new BizException(HttpResultCode.BIZ_EXCEPTION, "当前帖子状态异常，无法进行操作！");
+            throw new BizException(HttpResultCode.BIZ_EXCEPTION, "当前帖子状态异常，无法进行操作");
         }
         if (ObjectUtil.notEqual(post.getCreateId(), userId)) {
-            throw new BizException(HttpResultCode.BIZ_EXCEPTION, "当前帖子没有操作权限！");
+            throw new BizException(HttpResultCode.BIZ_EXCEPTION, "当前帖子没有操作权限");
         }
     }
 
@@ -134,11 +132,43 @@ public class PostService {
         if (request.getStatus() != null) {
             queryWrapper.eq(Post::getStatus, request.getStatus().getCode());
         }
-        if (request.getLaunchType() != null) {
-            queryWrapper.eq(Post::getLaunchType, request.getLaunchType().getCode());
-        }
 
         return postMapper.selectPage(PageUtils.createPage(request), queryWrapper);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void audit(PostAuditRequest request) {
+        Post post = getByIdWithExp(request.getId());
+        if (!PostStatusEnum.AUDIT_WAIT.getCode().equals(post.getStatus())) {
+            throw new BizException(HttpResultCode.BIZ_DATA_EXCEPTION, "该帖子状态异常，无法进行审核操作");
+        }
+        if (AuditResultEnum.PASS.equals(request.getAuditResult())) {
+            post.setStatus(PostStatusEnum.AUDIT_PASS.getCode());
+        } else {
+            if (StrUtil.isBlank(request.getAuditRemark())) {
+                throw new BizException(HttpResultCode.BIZ_EXCEPTION, "审核拒绝时备注不能为空");
+            }
+            post.setStatus(PostStatusEnum.AUDIT_REJECT.getCode());
+        }
+        post.setAuditRemark(request.getAuditRemark());
+        postMapper.updateById(post);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void close(PostCloseRequest request) {
+        Post post = getByIdWithExp(request.getId());
+        if (PostStatusEnum.CLOSED.getCode().equals(post.getStatus())) {
+            throw new BizException(HttpResultCode.BIZ_EXCEPTION, "该帖子已被关闭，无需操作");
+        }
+        post.setStatus(PostStatusEnum.CLOSED.getCode())
+            .setCloseReason(request.getCloseReason());
+        postMapper.updateById(post);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void delete(PostDeleteRequest request) {
+        Post post = getByIdWithExp(request.getId());
+        postMapper.deleteByIdWithFill(post);
     }
 
     private Set<String> getRecurveDownCategoryIds(Collection<String> categoryIds) {

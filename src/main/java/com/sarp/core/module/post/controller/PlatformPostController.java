@@ -8,6 +8,9 @@ import com.sarp.core.module.common.model.vo.PageVO;
 import com.sarp.core.module.post.helper.PostHelper;
 import com.sarp.core.module.post.model.entity.Post;
 import com.sarp.core.module.post.model.request.PlatformPostQueryRequest;
+import com.sarp.core.module.post.model.request.PostAuditRequest;
+import com.sarp.core.module.post.model.request.PostCloseRequest;
+import com.sarp.core.module.post.model.request.PostDeleteRequest;
 import com.sarp.core.module.post.model.response.PlatformPostResponse;
 import com.sarp.core.module.post.service.PostService;
 import io.swagger.annotations.Api;
@@ -15,9 +18,7 @@ import io.swagger.annotations.ApiOperation;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * @date 2024/1/30 11:51
@@ -35,15 +36,38 @@ public class PlatformPostController {
 
     private PostHelper postHelper;
 
-    @ApiOperation(value = "平台管理员分页查询帖子列表")
+    @ApiOperation(value = "后台-分页查询帖子列表")
     @GetMapping("/listPage")
     public HttpResult<PageVO<PlatformPostResponse>> listPage(@Validated(BaseQueryRequest.ListPage.class)
                                                                      PlatformPostQueryRequest request) {
         Page<Post> postPage = postService.listPagePlatform(request);
         PageVO<PlatformPostResponse> postResponsePageVO = CommonConvert.convertPageToPageVo(postPage, PlatformPostResponse.class);
-        postHelper.fillPostAbstractData(postPage, postResponsePageVO);
         postHelper.fillPostListData(postResponsePageVO.getDataList());
         return HttpResult.success(postResponsePageVO);
+    }
+
+    //TODO 查看详情
+
+
+    @ApiOperation(value = "后台-审核帖子")
+    @PostMapping("/audit")
+    public HttpResult<Void> audit(@RequestBody @Validated PostAuditRequest request) {
+        postService.audit(request);
+        return HttpResult.success();
+    }
+
+    @ApiOperation(value = "后台-关闭帖子")
+    @PostMapping("/close")
+    public HttpResult<Void> close(@RequestBody @Validated PostCloseRequest request) {
+        postService.close(request);
+        return HttpResult.success();
+    }
+
+    @ApiOperation(value = "后台-删除帖子")
+    @PostMapping("/delete")
+    public HttpResult<Void> delete(@RequestBody @Validated PostDeleteRequest request) {
+        postService.delete(request);
+        return HttpResult.success();
     }
 
 }

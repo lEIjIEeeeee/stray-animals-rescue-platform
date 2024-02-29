@@ -8,6 +8,7 @@
     <result column="pid" jdbcType="VARCHAR" property="pid" />
     <result column="name" jdbcType="VARCHAR" property="name" />
     <result column="level" jdbcType="INTEGER" property="level" />
+    <result column="status" jdbcType="INTEGER" property="status" />
     <result column="sort" jdbcType="INTEGER" property="sort" />
     <result column="create_id" jdbcType="VARCHAR" property="createId" />
     <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
@@ -17,7 +18,7 @@
   </resultMap>
   <sql id="Base_Column_List">
     <!--@mbg.generated-->
-    id, pid, `name`, `level`, sort, create_id, create_time, update_id, update_time, is_del
+    id, pid, `name`, `level`, `status`, sort, create_id, create_time, update_id, update_time, is_del
   </sql>
 
   <select id="recurveDownCategoryId" resultType="java.lang.String">

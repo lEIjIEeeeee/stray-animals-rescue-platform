@@ -22,10 +22,10 @@ public class PostResponse extends BaseResponse {
     @ApiModelProperty(value = "业务类型")
     private Integer bizType;
 
-    @ApiModelProperty(value = "分类id")
+    @ApiModelProperty(value = "动物类目id")
     private String categoryId;
 
-    @ApiModelProperty(value = "动物类别名称")
+    @ApiModelProperty(value = "动物类目名称")
     private String categoryName;
 
     @ApiModelProperty(value = "文章摘要")

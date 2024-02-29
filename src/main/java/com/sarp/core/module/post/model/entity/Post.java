@@ -72,10 +72,10 @@ public class Post extends BaseDO {
     private String animalId;
 
     /**
-     * 动物分类id
+     * 动物类目id
      */
     @TableField(value = "category_id")
-    @ApiModelProperty(value="动物分类id")
+    @ApiModelProperty(value="动物类目id")
     private String categoryId;
 
     /**

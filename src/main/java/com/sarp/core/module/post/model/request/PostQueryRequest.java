@@ -34,7 +34,7 @@ public class PostQueryRequest extends BaseQueryRequest {
     @ApiModelProperty(value = "业务类型")
     private BizTypeEnum bizType;
 
-    @ApiModelProperty(value = "动物类别")
+    @ApiModelProperty(value = "动物类目id集合")
     private Set<String> categoryIds;
 
     @ApiModelProperty(value = "创建开始日期")

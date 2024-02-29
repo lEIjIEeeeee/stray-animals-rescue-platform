@@ -44,8 +44,8 @@ public class SubmitPostRequest {
     @ApiModelProperty(value = "流浪动物id")
     private String animalId;
 
-    @ApiModelProperty(value = "动物分类id")
-    @NotBlank(message = "动物分类不能为空", groups = { SubmitPostRequest.Add.class, SubmitPostRequest.Edit.class })
+    @ApiModelProperty(value = "动物类目id")
+    @NotBlank(message = "动物类目不能为空", groups = { SubmitPostRequest.Add.class, SubmitPostRequest.Edit.class })
     private String categoryId;
 
     @ApiModelProperty(value = "动物名称")

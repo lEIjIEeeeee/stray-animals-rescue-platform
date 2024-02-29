@@ -13,11 +13,11 @@ import lombok.experimental.Accessors;
 import lombok.experimental.SuperBuilder;
 
 /**
- * 动物分类信息表
+ * 动物类目信息表
  * @date 2024/1/31 16:45
  */
 
-@ApiModel(description="动物分类信息表")
+@ApiModel(description="动物类目信息表")
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Accessors(chain = true)
@@ -47,6 +47,13 @@ public class Category extends BaseDO {
     @TableField(value = "`level`")
     @ApiModelProperty(value="层级")
     private Integer level;
+
+    /**
+     * 状态
+     */
+    @TableField(value = "`status`")
+    @ApiModelProperty(value="状态")
+    private Integer status;
 
     /**
      * 排序

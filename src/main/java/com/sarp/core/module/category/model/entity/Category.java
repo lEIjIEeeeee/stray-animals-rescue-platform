@@ -62,4 +62,15 @@ public class Category extends BaseDO {
     @ApiModelProperty(value="排序")
     private Integer sort;
 
+    /**
+     * 备注
+     */
+    @TableField(value = "remark")
+    @ApiModelProperty(value = "备注")
+    private String remark;
+
+    public static final String TERR_ROOT_ID = "0";
+    public static final String TERR_ROOT_PID = "-1";
+    public static final String TERR_ROOT_NAME = "动物类目树";
+
 }

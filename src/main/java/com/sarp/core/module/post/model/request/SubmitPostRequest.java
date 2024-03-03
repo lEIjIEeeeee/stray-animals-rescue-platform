@@ -1,7 +1,6 @@
 package com.sarp.core.module.post.model.request;
 
 import com.sarp.core.module.common.enums.BizTypeEnum;
-import com.sarp.core.module.common.enums.GenderEnum;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -29,35 +28,35 @@ public class SubmitPostRequest {
     @NotBlank(message = "标题不能为空", groups = { SubmitPostRequest.Add.class, SubmitPostRequest.Edit.class })
     private String title;
 
-    @ApiModelProperty(value = "内容")
-    @NotBlank(message = "内容不能为空", groups = { SubmitPostRequest.Add.class, SubmitPostRequest.Edit.class })
-    private String content;
-
-    @ApiModelProperty(value = "摘要")
-    @NotBlank(message = "摘要不能为空", groups = { SubmitPostRequest.Add.class, SubmitPostRequest.Edit.class })
-    private String postAbstract;
-
-    @ApiModelProperty(value = "业务类型")
-    @NotNull(message = "业务类型不能为空", groups = { SubmitPostRequest.Add.class, SubmitPostRequest.Edit.class })
-    private BizTypeEnum bizType;
-
-    @ApiModelProperty(value = "流浪动物id")
-    private String animalId;
-
     @ApiModelProperty(value = "动物类目id")
     @NotBlank(message = "动物类目不能为空", groups = { SubmitPostRequest.Add.class, SubmitPostRequest.Edit.class })
     private String categoryId;
+
+    @ApiModelProperty(value = "流浪动物id")
+    private String animalId;
 
     @ApiModelProperty(value = "动物名称")
     @NotBlank(message = "名称不能为空", groups = { SubmitPostRequest.Add.class, SubmitPostRequest.Edit.class })
     private String animalName;
 
+    @ApiModelProperty(value = "业务类型")
+    @NotNull(message = "业务类型不能为空", groups = { SubmitPostRequest.Add.class, SubmitPostRequest.Edit.class })
+    private BizTypeEnum bizType;
+
+    @ApiModelProperty(value = "摘要")
+    @NotBlank(message = "摘要不能为空", groups = { SubmitPostRequest.Add.class, SubmitPostRequest.Edit.class })
+    private String postAbstract;
+
+    @ApiModelProperty(value = "内容")
+    @NotBlank(message = "内容不能为空", groups = { SubmitPostRequest.Add.class, SubmitPostRequest.Edit.class })
+    private String content;
+
 //    @ApiModelProperty(value = "动物性别")
 //    @NotNull(message = "性别不能为空", groups = { SubmitPostRequest.Add.class, SubmitPostRequest.Edit.class })
 //    private GenderEnum animalGender;
 
-    @ApiModelProperty(value = "动物描述信息")
-    private String animalDesc;
+//    @ApiModelProperty(value = "动物描述信息")
+//    private String animalDesc;
 
 //    @ApiModelProperty(value = "上传照片")
 //    @NotEmpty(message = "上传照片不能为空", groups = { SubmitPostRequest.Add.class, SubmitPostRequest.Edit.class })

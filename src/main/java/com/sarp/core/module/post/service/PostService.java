@@ -1,6 +1,7 @@
 package com.sarp.core.module.post.service;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -8,11 +9,15 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.sarp.core.context.ContextUtils;
 import com.sarp.core.exception.BizException;
+import com.sarp.core.module.animal.dao.AnimalMapper;
 import com.sarp.core.module.animal.model.entity.Animal;
 import com.sarp.core.module.animal.service.AnimalService;
-import com.sarp.core.module.category.service.CategoryService;
+import com.sarp.core.module.animal.util.AnimalNoGenerateUtils;
+import com.sarp.core.module.category.dao.CategoryMapper;
 import com.sarp.core.module.common.enums.AuditResultEnum;
+import com.sarp.core.module.common.enums.BizTypeEnum;
 import com.sarp.core.module.common.enums.HttpResultCode;
+import com.sarp.core.module.common.enums.YesOrNoEnum;
 import com.sarp.core.module.common.model.entity.BaseDO;
 import com.sarp.core.module.post.dao.PostMapper;
 import com.sarp.core.module.post.enums.PostSearchTypeEnum;
@@ -41,20 +46,18 @@ import java.util.Set;
 public class PostService {
 
     private PostMapper postMapper;
+    private CategoryMapper categoryMapper;
+    private AnimalMapper animalMapper;
 
     private AnimalService animalService;
-    private CategoryService categoryService;
 
     @Transactional(rollbackFor = Exception.class)
     public void submitPost(SubmitPostRequest request) {
         checkAnimalOwner(request, ContextUtils.getCurrentUserId());
-        throw new BizException(HttpResultCode.BIZ_EXCEPTION);
-
-//        Post post = JavaBeanUtils.map(request, Post.class, BaseDO.ID);
-//        post.setBizType(request.getBizType().getCode())
-//            .setStatus(PostStatusEnum.AUDIT_WAIT.getCode());
-//
-//        postMapper.insert(post);
+        Post post = JavaBeanUtils.map(request, Post.class, BaseDO.ID);
+        post.setBizType(request.getBizType().getCode())
+            .setStatus(PostStatusEnum.AUDIT_WAIT.getCode());
+        postMapper.insert(post);
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -63,13 +66,11 @@ public class PostService {
         checkAnimalOwner(request, userId);
 
         Post post = getByIdWithExp(request.getId());
-
         checkPostInfo(post, userId);
 
         JavaBeanUtils.map(request, post);
         post.setBizType(request.getBizType().getCode())
             .setStatus(PostStatusEnum.AUDIT_WAIT.getCode());
-
         postMapper.updateById(post);
     }
 
@@ -149,16 +150,55 @@ public class PostService {
         if (!PostStatusEnum.AUDIT_WAIT.getCode().equals(post.getStatus())) {
             throw new BizException(HttpResultCode.BIZ_DATA_EXCEPTION, "该帖子状态异常，无法进行审核操作");
         }
+
         if (AuditResultEnum.PASS.equals(request.getAuditResult())) {
             post.setStatus(PostStatusEnum.AUDIT_PASS.getCode());
+            updateOrInsertAnimalRecord(post);
         } else {
             if (StrUtil.isBlank(request.getAuditRemark())) {
                 throw new BizException(HttpResultCode.BIZ_EXCEPTION, "审核拒绝时备注不能为空");
             }
             post.setStatus(PostStatusEnum.AUDIT_REJECT.getCode());
         }
-        post.setAuditRemark(request.getAuditRemark());
+
+        post.setAuditId(ContextUtils.getCurrentUserId())
+            .setAuditTime(DateUtil.date())
+            .setAuditRemark(request.getAuditRemark());
         postMapper.updateById(post);
+    }
+
+    private void updateOrInsertAnimalRecord(Post post) {
+        if (StrUtil.isNotBlank(post.getAnimalId())) {
+            Animal animal = animalService.getByIdWithExp(post.getAnimalId());
+            if (ObjectUtil.isNull(animal)) {
+                throw new BizException(HttpResultCode.DATA_NOT_EXISTED);
+            }
+            updateAnimalStatus(post, animal);
+            animalMapper.updateById(animal);
+        } else {
+            Animal animal = Animal.builder()
+                                  .animalNo(AnimalNoGenerateUtils.generateAnimalNo())
+                                  .categoryId(post.getCategoryId())
+                                  .ownerId(post.getCreateId())
+                                  .name(post.getAnimalName())
+                                  .gender(post.getAnimalGender())
+                                  .isAdopt(YesOrNoEnum.N.getCode())
+                                  .isLoss(YesOrNoEnum.N.getCode())
+                                  .desc(post.getAnimalDesc())
+                                  .build();
+            updateAnimalStatus(post, animal);
+            animalMapper.insert(animal);
+        }
+    }
+
+    private void updateAnimalStatus(Post post, Animal animal) {
+        if (BizTypeEnum.ADOPT_BIZ.getCode().equals(post.getBizType())) {
+            animal.setIsAdopt(YesOrNoEnum.Y.getCode());
+        }
+
+        if (BizTypeEnum.LOSS_BIZ.getCode().equals(post.getBizType())){
+            animal.setIsLoss(YesOrNoEnum.Y.getCode());
+        }
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -186,7 +226,7 @@ public class PostService {
         }
 
         for (String id : categoryIds) {
-            Set<String> childIds = categoryService.recurveDownCategoryId(id);
+            Set<String> childIds = categoryMapper.recursiveDownCategoryId(id);
             if (CollUtil.isNotEmpty(childIds)) {
                 recurveDownCategoryIds.addAll(childIds);
             }
@@ -196,7 +236,7 @@ public class PostService {
                 ? recurveDownCategoryIds : Collections.emptySet();
     }
 
-    public Post getByIdWithExp(String id) {
+    private Post getByIdWithExp(String id) {
         Post post = postMapper.selectById(id);
         if (ObjectUtil.isNull(post)) {
             throw new BizException(HttpResultCode.DATA_NOT_EXISTED);

@@ -1,8 +1,6 @@
 package com.sarp.core.module.post.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.sarp.core.exception.BizException;
-import com.sarp.core.module.common.enums.HttpResultCode;
 import com.sarp.core.module.common.model.HttpResult;
 import com.sarp.core.module.common.model.convert.CommonConvert;
 import com.sarp.core.module.common.model.request.BaseQueryRequest;
@@ -42,7 +40,6 @@ public class PostController {
     @PostMapping("/submitPost")
     public HttpResult<Void> submitPost(@RequestBody @Validated(SubmitPostRequest.Add.class)
                                                SubmitPostRequest request) {
-
         postService.submitPost(request);
         return HttpResult.success();
     }
@@ -61,7 +58,6 @@ public class PostController {
                                                      PostQueryRequest request) {
         Page<Post> postPage = postService.listPage(request);
         PageVO<PostResponse> postResponsePageVO = CommonConvert.convertPageToPageVo(postPage, PostResponse.class);
-//        postHelper.fillPostAbstractData(postPage, postResponsePageVO);
         postHelper.fillPostListData(postResponsePageVO.getDataList());
         return HttpResult.success(postResponsePageVO);
     }

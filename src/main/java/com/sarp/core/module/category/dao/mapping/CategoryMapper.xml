@@ -10,6 +10,7 @@
     <result column="level" jdbcType="INTEGER" property="level" />
     <result column="status" jdbcType="INTEGER" property="status" />
     <result column="sort" jdbcType="INTEGER" property="sort" />
+    <result column="remark" jdbcType="INTEGER" property="remark" />
     <result column="create_id" jdbcType="VARCHAR" property="createId" />
     <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
     <result column="update_id" jdbcType="VARCHAR" property="updateId" />
@@ -18,10 +19,38 @@
   </resultMap>
   <sql id="Base_Column_List">
     <!--@mbg.generated-->
-    id, pid, `name`, `level`, `status`, sort, create_id, create_time, update_id, update_time, is_del
+    id, pid, `name`, `level`, `status`, sort, remark, create_id, create_time, update_id, update_time, is_del
   </sql>
 
+  <select id="recurveUpCategoryId" resultType="java.lang.String">
+    select recurveUpCategoryId(#{categoryId}) from dual
+  </select>
+
   <select id="recurveDownCategoryId" resultType="java.lang.String">
-    select recurveDownCategoryId(#{id}) from dual
+    select recurveDownCategoryId(#{categoryId}) from dual
+  </select>
+
+  <select id="recursiveUpCategoryId" resultType="java.lang.String">
+    with recursive type_cte as (
+    select id, pid from tbl_animal_category where id = #{id}
+    union all
+    select tac.id, tac.pid from tbl_animal_category tac
+    inner join type_cte type_cte2 on tac.id = type_cte2.pid
+    and tac.is_del = 0
+    )
+    select id
+    from type_cte
+  </select>
+
+  <select id="recursiveDownCategoryId" resultType="java.lang.String">
+    with recursive type_cte as (
+    select id from tbl_animal_category where id = #{id}
+    union all
+    select tac.id from tbl_animal_category tac
+    inner join type_cte type_cte2 on tac.pid = type_cte2.id
+    and tac.is_del = 0
+    )
+    select id
+    from type_cte
   </select>
 </mapper>

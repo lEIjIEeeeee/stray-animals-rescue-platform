@@ -15,6 +15,7 @@ import com.sarp.core.exception.BizException;
 import com.sarp.core.module.auth.constant.AuthConstants;
 import com.sarp.core.module.auth.dao.UserAuthMapper;
 import com.sarp.core.module.auth.model.dto.LoginUser;
+import com.sarp.core.module.auth.model.dto.SysTokenLoginDTO;
 import com.sarp.core.module.auth.model.entity.UserAuth;
 import com.sarp.core.module.auth.model.request.LoginRequest;
 import com.sarp.core.module.auth.model.request.RegisterRequest;
@@ -239,6 +240,11 @@ public class LoginService {
     public void logout() {
         userAuthMapper.delete(Wrappers.lambdaQuery(UserAuth.class)
                                       .eq(UserAuth::getUserId, ContextUtils.getCurrentUserId()));
+    }
+
+    public SysTokenLoginDTO sysTokenLogin() {
+        LoginUser loginUser = ContextUtils.getCurrentUser();
+        return JavaBeanUtils.map(loginUser, SysTokenLoginDTO.class);
     }
 
 }

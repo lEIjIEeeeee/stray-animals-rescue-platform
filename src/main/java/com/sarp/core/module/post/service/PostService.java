@@ -13,6 +13,7 @@ import com.sarp.core.module.animal.dao.AnimalMapper;
 import com.sarp.core.module.animal.model.entity.Animal;
 import com.sarp.core.module.animal.service.AnimalService;
 import com.sarp.core.module.animal.util.AnimalNoGenerateUtils;
+import com.sarp.core.module.auth.model.dto.LoginUser;
 import com.sarp.core.module.category.dao.CategoryMapper;
 import com.sarp.core.module.common.enums.AuditResultEnum;
 import com.sarp.core.module.common.enums.BizTypeEnum;
@@ -25,6 +26,7 @@ import com.sarp.core.module.post.enums.PostStatusEnum;
 import com.sarp.core.module.post.model.dto.PostCloseReasonDTO;
 import com.sarp.core.module.post.model.entity.Post;
 import com.sarp.core.module.post.model.request.*;
+import com.sarp.core.module.user.enums.UserTypeEnum;
 import com.sarp.core.util.JavaBeanUtils;
 import com.sarp.core.util.PageUtils;
 import lombok.AllArgsConstructor;
@@ -53,7 +55,14 @@ public class PostService {
 
     @Transactional(rollbackFor = Exception.class)
     public void submitPost(SubmitPostRequest request) {
-        checkAnimalOwner(request, ContextUtils.getCurrentUserId());
+        LoginUser user = ContextUtils.getCurrentUser();
+        if (UserTypeEnum.NORMAL_USER.name().equals(user.getUserType())) {
+            checkAnimalOwner(request, user.getId());
+        }
+        if (StrUtil.isNotBlank(request.getAnimalId())) {
+            checkAnimalStatus(request);
+        }
+
         Post post = JavaBeanUtils.map(request, Post.class, BaseDO.ID);
         post.setBizType(request.getBizType().getCode())
             .setStatus(PostStatusEnum.AUDIT_WAIT.getCode());
@@ -62,11 +71,16 @@ public class PostService {
 
     @Transactional(rollbackFor = Exception.class)
     public void resubmitPost(SubmitPostRequest request) {
-        String userId = ContextUtils.getCurrentUserId();
-        checkAnimalOwner(request, userId);
+        LoginUser user = ContextUtils.getCurrentUser();
+        if (UserTypeEnum.NORMAL_USER.name().equals(user.getUserType())) {
+            checkAnimalOwner(request, user.getId());
+        }
+        if (StrUtil.isNotBlank(request.getAnimalId())) {
+            checkAnimalStatus(request);
+        }
 
         Post post = getByIdWithExp(request.getId());
-        checkPostInfo(post, userId);
+        checkPostInfo(post, user.getId());
 
         JavaBeanUtils.map(request, post);
         post.setBizType(request.getBizType().getCode())
@@ -80,6 +94,14 @@ public class PostService {
             if (ObjectUtil.notEqual(animal.getOwnerId(), userId)) {
                 throw new BizException(HttpResultCode.BIZ_EXCEPTION, "当前选择不是你名下的宠物，没有操作权限");
             }
+        }
+    }
+
+    private void checkAnimalStatus(SubmitPostRequest request) {
+        Animal animal = animalService.getByIdWithExp(request.getAnimalId());
+        if (BizTypeEnum.ADOPT_BIZ.equals(request.getBizType())
+                && YesOrNoEnum.Y.getCode().equals(animal.getIsLoss())) {
+            throw new BizException(HttpResultCode.BIZ_EXCEPTION, "当前宠物已挂失，无法发起领养帖");
         }
     }
 
@@ -173,6 +195,12 @@ public class PostService {
             if (ObjectUtil.isNull(animal)) {
                 throw new BizException(HttpResultCode.DATA_NOT_EXISTED);
             }
+
+            if (BizTypeEnum.ADOPT_BIZ.getCode().equals(post.getBizType())
+                    && YesOrNoEnum.Y.getCode().equals(animal.getIsLoss())) {
+                throw new BizException(HttpResultCode.BIZ_EXCEPTION, "当前宠物已挂失，领养帖无法进行审核通过操作");
+            }
+
             updateAnimalStatus(post, animal);
             animalMapper.updateById(animal);
         } else {

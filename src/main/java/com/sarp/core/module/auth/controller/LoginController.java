@@ -1,6 +1,7 @@
 package com.sarp.core.module.auth.controller;
 
 import com.sarp.core.module.auth.model.dto.LoginUser;
+import com.sarp.core.module.auth.model.dto.SysTokenLoginDTO;
 import com.sarp.core.module.auth.model.request.LoginRequest;
 import com.sarp.core.module.auth.model.request.RegisterRequest;
 import com.sarp.core.module.auth.service.LoginService;
@@ -10,10 +11,7 @@ import io.swagger.annotations.ApiOperation;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * @date 2024/1/23 9:26
@@ -47,6 +45,12 @@ public class LoginController {
     public HttpResult<Void> logout() {
         loginService.logout();
         return HttpResult.success();
+    }
+
+    @ApiOperation(value = "获取登录用户信息")
+    @GetMapping("/sysTokenLogin")
+    public HttpResult<SysTokenLoginDTO> sysTokenLogin() {
+        return HttpResult.success(loginService.sysTokenLogin());
     }
 
 }

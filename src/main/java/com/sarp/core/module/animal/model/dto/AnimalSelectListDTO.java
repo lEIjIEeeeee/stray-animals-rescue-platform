@@ -19,6 +19,12 @@ public class AnimalSelectListDTO {
     @ApiModelProperty(value = "id")
     private String id;
 
+    @ApiModelProperty(value = "动物编号")
+    private String animalNo;
+
+    @ApiModelProperty(value = "类目id")
+    private String categoryId;
+
     @ApiModelProperty(value = "动物名称")
     private String name;
 

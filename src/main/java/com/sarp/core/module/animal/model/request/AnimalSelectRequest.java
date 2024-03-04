@@ -19,7 +19,4 @@ public class AnimalSelectRequest {
     @ApiModelProperty(value = "动物类目id")
     private String categoryId;
 
-    @ApiModelProperty(value = "搜索关键字")
-    private String searchContent;
-
 }

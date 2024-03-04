@@ -62,10 +62,10 @@ public class Animal extends BaseDO {
     private String gender;
 
     /**
-     * 是否领养 0-否 1-是
+     * 是否需要领养 0-否 1-是
      */
     @TableField(value = "is_adopt")
-    @ApiModelProperty(value = "是否领养 0-否 1-是")
+    @ApiModelProperty(value = "是否需要领养 0-否 1-是")
     private Integer isAdopt;
 
     /**

@@ -31,9 +31,12 @@ public class AnimalController {
     private AnimalService animalService;
 
     @ApiOperation(value = "发帖时获取动物下拉列表")
-    @GetMapping("/getAnimalSelectList")
-    public HttpResult<List<AnimalSelectListDTO>> getAnimalSelectList(AnimalSelectRequest request) {
-        return HttpResult.success(JavaBeanUtils.mapList(animalService.getAnimalSelectList(request), AnimalSelectListDTO.class));
+    @GetMapping("/getAnimalListByCategoryId")
+    public HttpResult<List<AnimalSelectListDTO>> getAnimalListByCategoryId(AnimalSelectRequest request) {
+        List<AnimalSelectListDTO> animalSelectList = JavaBeanUtils.mapList(animalService.getAnimalListByCategoryId(request), AnimalSelectListDTO.class);
+        return HttpResult.success(animalSelectList);
     }
+
+
 
 }

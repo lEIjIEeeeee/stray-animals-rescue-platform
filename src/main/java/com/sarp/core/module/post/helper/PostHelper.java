@@ -10,9 +10,7 @@ import com.sarp.core.module.user.model.entity.Member;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -36,21 +34,23 @@ public class PostHelper {
                                           .map(PostResponse::getCategoryId)
                                           .collect(Collectors.toSet());
         List<Category> categoryList = categoryMapper.selectBatchIds(categoryIds);
-        if (CollUtil.isEmpty(categoryList)) {
-            return;
+
+        Map<String, Category> categoryMap = Collections.emptyMap();
+        if (CollUtil.isNotEmpty(categoryList)) {
+            categoryMap = categoryList.stream()
+                                      .collect(Collectors.toMap(Category::getId, category -> category));
         }
-        Map<String, Category> categoryMap = categoryList.stream()
-                                                        .collect(Collectors.toMap(Category::getId, category -> category));
 
         Set<String> createIds = dataList.stream()
                                         .map(PostResponse::getCreateId)
                                         .collect(Collectors.toSet());
         List<Member> createUserList = memberMapper.selectBatchIds(createIds);
-        if (CollUtil.isEmpty(createUserList)) {
-            return;
+
+        Map<String, Member> createUserMap = Collections.emptyMap();
+        if (CollUtil.isNotEmpty(createUserList)) {
+            createUserMap = createUserList.stream()
+                                          .collect(Collectors.toMap(Member::getId, member -> member));
         }
-        Map<String, Member> createUserMap = createUserList.stream()
-                                                          .collect(Collectors.toMap(Member::getId, member -> member));
 
         for (PostResponse response : dataList) {
             Category category = categoryMap.get(response.getCategoryId());

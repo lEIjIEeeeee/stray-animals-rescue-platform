@@ -51,10 +51,10 @@ public class Post extends BaseDO {
     private String postAbstract;
 
     /**
-     * 业务类型 1-领养 2-挂失 99-其他
+     * 业务类型 1-领养 2-遗失 99-其他
      */
     @TableField(value = "biz_type")
-    @ApiModelProperty(value="业务类型 1-领养 2-挂失 99-其他")
+    @ApiModelProperty(value="业务类型 1-领养 2-遗失 99-其他")
     private Integer bizType;
 
     /**

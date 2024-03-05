@@ -26,7 +26,9 @@ import com.sarp.core.module.post.enums.PostStatusEnum;
 import com.sarp.core.module.post.model.dto.PostCloseReasonDTO;
 import com.sarp.core.module.post.model.entity.Post;
 import com.sarp.core.module.post.model.request.*;
+import com.sarp.core.module.user.dao.MemberMapper;
 import com.sarp.core.module.user.enums.UserTypeEnum;
+import com.sarp.core.module.user.model.entity.Member;
 import com.sarp.core.util.JavaBeanUtils;
 import com.sarp.core.util.PageUtils;
 import lombok.AllArgsConstructor;
@@ -36,7 +38,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @date 2024/1/30 15:49
@@ -50,6 +54,7 @@ public class PostService {
     private PostMapper postMapper;
     private CategoryMapper categoryMapper;
     private AnimalMapper animalMapper;
+    private MemberMapper memberMapper;
 
     private AnimalService animalService;
 
@@ -99,9 +104,9 @@ public class PostService {
 
     private void checkAnimalStatus(SubmitPostRequest request) {
         Animal animal = animalService.getByIdWithExp(request.getAnimalId());
-        if (BizTypeEnum.ADOPT_BIZ.equals(request.getBizType())
-                && YesOrNoEnum.Y.getCode().equals(animal.getIsLoss())) {
-            throw new BizException(HttpResultCode.BIZ_EXCEPTION, "当前宠物已挂失，无法发起领养帖");
+        if (YesOrNoEnum.Y.getCode().equals(animal.getIsLost())
+                && BizTypeEnum.ADOPT_BIZ.equals(request.getBizType())) {
+            throw new BizException(HttpResultCode.BIZ_EXCEPTION, "当前宠物已遗失，无法发起领养帖");
         }
     }
 
@@ -115,55 +120,80 @@ public class PostService {
     }
 
     public Page<Post> listPage(PostQueryRequest request) {
-        PlatformPostQueryRequest queryRequest = JavaBeanUtils.map(request, PlatformPostQueryRequest.class);
-        return buildPostListPage(queryRequest);
+        LambdaQueryWrapper<Post> queryWrapper = Wrappers.lambdaQuery(Post.class)
+                                                        .ne(Post::getStatus, PostStatusEnum.AUDIT_WAIT.getCode())
+                                                        //TODO 待审核排在最前面
+                                                        .isNotNull(Post::getStatus);
+
+        boolean queryFlag = buildPostListQueryWrapper(request, queryWrapper);
+        if (!queryFlag) {
+            return PageUtils.createEmptyPage();
+        }
+        return postMapper.selectPage(PageUtils.createPage(request), queryWrapper);
     }
 
     public Page<Post> listPagePlatform(PlatformPostQueryRequest request) {
-        return buildPostListPage(request);
+        LambdaQueryWrapper<Post> queryWrapper = Wrappers.lambdaQuery(Post.class)
+                                                        .ge(request.getAuditStartDate() != null, Post::getAuditTime, request.getAuditStartDate())
+                                                        .le(request.getAuditEndDate() != null, Post::getAuditTime, request.getAuditEndDate());
+        if (request.getStatus() != null) {
+            queryWrapper.eq(Post::getStatus, request.getStatus());
+        }
+
+        boolean queryFlag = buildPostListQueryWrapper(request, queryWrapper);
+        if (!queryFlag) {
+            return PageUtils.createEmptyPage();
+        }
+        return postMapper.selectPage(PageUtils.createPage(request), queryWrapper);
     }
 
-    private Page<Post> buildPostListPage(PlatformPostQueryRequest request) {
-        LambdaQueryWrapper<Post> queryWrapper = Wrappers.lambdaQuery(Post.class)
-                                                        .ge(request.getCreateStartTime() != null, Post::getCreateTime, request.getCreateStartTime())
-                                                        .le(request.getCreateEndTime() != null, Post::getCreateTime, request.getCreateEndTime())
-                                                        .ge(request.getAuditStartTime() != null, Post::getAuditTime, request.getAuditStartTime())
-                                                        .le(request.getAuditEndTime() != null, Post::getAuditTime, request.getAuditEndTime())
-                                                        .orderByDesc(Post::getUpdateTime)
-                                                        .orderByDesc(Post::getCreateTime);
+    private boolean buildPostListQueryWrapper(PostQueryRequest request, LambdaQueryWrapper<Post> queryWrapper) {
+        queryWrapper.ge(request.getCreateStartDate() != null, Post::getCreateTime, request.getCreateStartDate())
+                    .le(request.getCreateEndDate() != null, Post::getCreateTime, request.getCreateEndDate())
+                    .orderByDesc(Post::getUpdateTime)
+                    .orderByDesc(Post::getCreateTime);
 
         if (request.getSearchType() != null
                 && StrUtil.isNotBlank(request.getSearchContent())) {
             if (PostSearchTypeEnum.POST_TITLE == request.getSearchType()) {
                 queryWrapper.like(Post::getTitle, request.getSearchContent());
             }
+            if (PostSearchTypeEnum.CREATE_USER.equals(request.getSearchType())) {
+                List<Member> memberList = memberMapper.selectList(Wrappers.lambdaQuery(Member.class)
+                                                                          .like(Member::getNickName, request.getSearchContent()));
+                if (CollUtil.isEmpty(memberList)) {
+                    return false;
+                }
+                List<String> userIds = memberList.stream()
+                                                 .map(Member::getId)
+                                                 .collect(Collectors.toList());
+                queryWrapper.in(Post::getCreateId, userIds);
+            }
             if (PostSearchTypeEnum.ANIMAL_NAME == request.getSearchType()) {
                 queryWrapper.like(Post::getAnimalName, request.getSearchContent());
             }
         }
 
-        if (CollUtil.isNotEmpty(request.getCategoryIds())) {
-            Set<String> recurveDownCategoryIds = getRecurveDownCategoryIds(request.getCategoryIds());
-            if (CollUtil.isNotEmpty(recurveDownCategoryIds)) {
-                return PageUtils.createEmptyPage();
-            }
-            queryWrapper.in(Post::getCategoryId, recurveDownCategoryIds);
-        }
-
         if (request.getBizType() != null) {
             queryWrapper.eq(Post::getBizType, request.getBizType().getCode());
         }
-        if (request.getStatus() != null) {
-            queryWrapper.eq(Post::getStatus, request.getStatus().getCode());
-        }
 
-        return postMapper.selectPage(PageUtils.createPage(request), queryWrapper);
+        if (CollUtil.isNotEmpty(request.getCategoryIds())) {
+            Set<String> recurveDownCategoryIds = getRecurveDownCategoryIds(request.getCategoryIds());
+            if (CollUtil.isEmpty(recurveDownCategoryIds)) {
+                return false;
+            }
+            queryWrapper.in(Post::getCategoryId, recurveDownCategoryIds);
+        }
+        return true;
     }
 
     public PostCloseReasonDTO getCloseReason(String id) {
         Post post = getByIdWithExp(id);
         return PostCloseReasonDTO.builder()
-                                 .id(id).closeReason(post.getCloseReason()).build();
+                                 .id(id)
+                                 .closeReason(post.getCloseReason())
+                                 .build();
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -196,9 +226,9 @@ public class PostService {
                 throw new BizException(HttpResultCode.DATA_NOT_EXISTED);
             }
 
-            if (BizTypeEnum.ADOPT_BIZ.getCode().equals(post.getBizType())
-                    && YesOrNoEnum.Y.getCode().equals(animal.getIsLoss())) {
-                throw new BizException(HttpResultCode.BIZ_EXCEPTION, "当前宠物已挂失，领养帖无法进行审核通过操作");
+            if (YesOrNoEnum.Y.getCode().equals(animal.getIsLost())
+                    && BizTypeEnum.ADOPT_BIZ.getCode().equals(post.getBizType())) {
+                throw new BizException(HttpResultCode.BIZ_EXCEPTION, "当前宠物已遗失，领养帖无法进行审核通过操作");
             }
 
             updateAnimalStatus(post, animal);
@@ -211,7 +241,7 @@ public class PostService {
                                   .name(post.getAnimalName())
                                   .gender(post.getAnimalGender())
                                   .isAdopt(YesOrNoEnum.N.getCode())
-                                  .isLoss(YesOrNoEnum.N.getCode())
+                                  .isLost(YesOrNoEnum.N.getCode())
                                   .desc(post.getAnimalDesc())
                                   .build();
             updateAnimalStatus(post, animal);
@@ -221,11 +251,11 @@ public class PostService {
 
     private void updateAnimalStatus(Post post, Animal animal) {
         if (BizTypeEnum.ADOPT_BIZ.getCode().equals(post.getBizType())) {
-            animal.setIsAdopt(YesOrNoEnum.Y.getCode());
+            animal.setIsAdopt(YesOrNoEnum.N.getCode());
         }
 
-        if (BizTypeEnum.LOSS_BIZ.getCode().equals(post.getBizType())){
-            animal.setIsLoss(YesOrNoEnum.Y.getCode());
+        if (BizTypeEnum.LOST_BIZ.getCode().equals(post.getBizType())){
+            animal.setIsLost(YesOrNoEnum.Y.getCode());
         }
     }
 

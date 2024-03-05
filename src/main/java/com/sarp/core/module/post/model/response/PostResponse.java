@@ -19,14 +19,17 @@ public class PostResponse extends BaseResponse {
     @ApiModelProperty(value = "标题")
     private String title;
 
-    @ApiModelProperty(value = "业务类型")
-    private Integer bizType;
+    @ApiModelProperty(value = "动物名称")
+    private String animalName;
 
     @ApiModelProperty(value = "动物类目id")
     private String categoryId;
 
     @ApiModelProperty(value = "动物类目名称")
     private String categoryName;
+
+    @ApiModelProperty(value = "业务类型")
+    private Integer bizType;
 
     @ApiModelProperty(value = "文章摘要")
     private String postAbstract;

@@ -12,5 +12,6 @@ import lombok.Getter;
 public enum PostSearchTypeEnum {
     //
     POST_TITLE,
+    CREATE_USER,
     ANIMAL_NAME
 }

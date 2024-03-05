@@ -12,7 +12,7 @@ import lombok.Getter;
 public enum BizTypeEnum {
     //
     ADOPT_BIZ(1, "领养"),
-    LOSS_BIZ(2, "挂失"),
+    LOST_BIZ(2, "遗失"),
     OTHER(99, "其他")
     ;
 

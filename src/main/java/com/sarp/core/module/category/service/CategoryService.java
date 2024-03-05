@@ -42,8 +42,7 @@ public class CategoryService extends ServiceImpl<CategoryMapper, Category> {
     public Page<Category> listPage(CategoryQueryRequest request) {
         LambdaQueryWrapper<Category> lqw = Wrappers.lambdaQuery(Category.class)
                                                    .eq(Category::getPid, request.getPid())
-                                                   .orderByAsc(Category::getSort)
-                                                   .orderByDesc(Category::getUpdateTime);
+                                                   .orderByAsc(Category::getSort);
         return categoryMapper.selectPage(PageUtils.createPage(request), lqw);
     }
 

@@ -26,11 +26,11 @@ public class PlatformPostQueryRequest extends PostQueryRequest {
     private PostStatusEnum status;
 
     @ApiModelProperty(value = "审核开始日期")
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
-    private Date auditStartTime;
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date auditStartDate;
 
     @ApiModelProperty(value = "审核结束日期")
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
-    private Date auditEndTime;
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date auditEndDate;
 
 }

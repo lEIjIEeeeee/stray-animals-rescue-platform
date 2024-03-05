@@ -11,7 +11,7 @@
     <result column="name" jdbcType="VARCHAR" property="name" />
     <result column="gender" jdbcType="VARCHAR" property="gender" />
     <result column="is_adopt" jdbcType="INTEGER" property="isAdopt" />
-    <result column="is_loss" jdbcType="INTEGER" property="isLoss" />
+    <result column="is_lost" jdbcType="INTEGER" property="isLost" />
     <result column="desc" jdbcType="VARCHAR" property="desc" />
     <result column="create_id" jdbcType="VARCHAR" property="createId" />
     <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
@@ -21,7 +21,7 @@
   </resultMap>
   <sql id="Base_Column_List">
     <!--@mbg.generated-->
-    id, animal_no, category_id, owner_id, `name`, gender, is_adopt, is_loss, `desc`,
+    id, animal_no, category_id, owner_id, `name`, gender, is_adopt, is_lost, `desc`,
     create_id, create_time, update_id, update_time, is_del
   </sql>
 </mapper>

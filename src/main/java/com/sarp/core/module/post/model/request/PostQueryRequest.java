@@ -38,11 +38,11 @@ public class PostQueryRequest extends BaseQueryRequest {
     private Set<String> categoryIds;
 
     @ApiModelProperty(value = "创建开始日期")
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
-    private Date createStartTime;
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date createStartDate;
 
     @ApiModelProperty(value = "创建结束日期")
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
-    private Date createEndTime;
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date createEndDate;
 
 }

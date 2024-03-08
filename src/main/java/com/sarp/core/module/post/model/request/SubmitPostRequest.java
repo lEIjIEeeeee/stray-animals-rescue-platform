@@ -29,14 +29,14 @@ public class SubmitPostRequest {
     private String title;
 
     @ApiModelProperty(value = "动物类目id")
-    @NotBlank(message = "动物类目不能为空", groups = { SubmitPostRequest.Add.class, SubmitPostRequest.Edit.class })
+    @NotBlank(message = "动物类目id不能为空", groups = { SubmitPostRequest.Add.class, SubmitPostRequest.Edit.class })
     private String categoryId;
 
-    @ApiModelProperty(value = "流浪动物id")
+    @ApiModelProperty(value = "宠物id")
     private String animalId;
 
-    @ApiModelProperty(value = "动物名称")
-    @NotBlank(message = "名称不能为空", groups = { SubmitPostRequest.Add.class, SubmitPostRequest.Edit.class })
+    @ApiModelProperty(value = "宠物名称")
+    @NotBlank(message = "宠物名称不能为空", groups = { SubmitPostRequest.Add.class, SubmitPostRequest.Edit.class })
     private String animalName;
 
     @ApiModelProperty(value = "业务类型")
@@ -51,11 +51,11 @@ public class SubmitPostRequest {
     @NotBlank(message = "内容不能为空", groups = { SubmitPostRequest.Add.class, SubmitPostRequest.Edit.class })
     private String content;
 
-//    @ApiModelProperty(value = "动物性别")
+//    @ApiModelProperty(value = "宠物性别")
 //    @NotNull(message = "性别不能为空", groups = { SubmitPostRequest.Add.class, SubmitPostRequest.Edit.class })
 //    private GenderEnum animalGender;
 
-//    @ApiModelProperty(value = "动物描述信息")
+//    @ApiModelProperty(value = "宠物描述信息")
 //    private String animalDesc;
 
 //    @ApiModelProperty(value = "上传照片")

@@ -22,14 +22,6 @@
     id, pid, `name`, `level`, `status`, sort, remark, create_id, create_time, update_id, update_time, is_del
   </sql>
 
-  <select id="recurveUpCategoryId" resultType="java.lang.String">
-    select recurveUpCategoryId(#{categoryId}) from dual
-  </select>
-
-  <select id="recurveDownCategoryId" resultType="java.lang.String">
-    select recurveDownCategoryId(#{categoryId}) from dual
-  </select>
-
   <select id="recursiveUpCategoryId" resultType="java.lang.String">
     with recursive type_cte as (
     select id, pid from tbl_animal_category where id = #{id}

@@ -24,7 +24,7 @@ import javax.validation.constraints.NotBlank;
  * @date 2024/1/30 11:18
  */
 
-@Api(tags = "帖子模块-用户发帖相关接口")
+@Api(tags = "用户端帖子模块-用户帖子相关接口")
 @Slf4j
 @AllArgsConstructor
 @Validated

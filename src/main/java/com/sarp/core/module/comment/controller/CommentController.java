@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @date 2024/2/23 16:30
  */
 
-@Api(tags = "评论模块-用户评论相关接口")
+@Api(tags = "用户端评论模块-用户评论相关接口")
 @Validated
 @Slf4j
 @AllArgsConstructor

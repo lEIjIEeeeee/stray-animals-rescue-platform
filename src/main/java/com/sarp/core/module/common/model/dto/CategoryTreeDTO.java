@@ -1,4 +1,4 @@
-package com.sarp.core.module.category.model;
+package com.sarp.core.module.common.model.dto;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;

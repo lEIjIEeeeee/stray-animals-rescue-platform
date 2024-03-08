@@ -15,10 +15,6 @@ import java.util.Set;
 @Mapper
 public interface CategoryMapper extends MyBaseMapper<Category> {
 
-//    String recurveUpCategoryId(@Param("categoryId") String categoryId);
-//
-//    String recurveDownCategoryId(@Param("categoryId") String categoryId);
-
     Set<String> recursiveUpCategoryId(@Param("id") String id);
 
     Set<String> recursiveDownCategoryId(@Param("id") String id);

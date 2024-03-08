@@ -1,6 +1,5 @@
 package com.sarp.core.module.category.controller;
 
-import com.sarp.core.module.category.model.CategoryTreeDTO;
 import com.sarp.core.module.category.model.request.CategoryDeleteRequest;
 import com.sarp.core.module.category.model.request.CategoryQueryRequest;
 import com.sarp.core.module.category.model.request.CategoryRequest;
@@ -25,13 +24,13 @@ import javax.validation.constraints.NotBlank;
  * @date 2024/3/1 1:30
  */
 
-@Api(tags = "类目模块-动物类目信息管理相关接口")
+@Api(tags = "平台端类目模块-动物类目信息管理相关接口")
 @Validated
 @Slf4j
 @AllArgsConstructor
 @RestController
-@RequestMapping("/categoryModule/category")
-public class CategoryController {
+@RequestMapping("/categoryModule/platform/category")
+public class PlatformCategoryController {
 
     private CategoryService categoryService;
 
@@ -76,12 +75,6 @@ public class CategoryController {
     public HttpResult<Void> delete(@RequestBody @Validated CategoryDeleteRequest request) {
         categoryService.delete(request);
         return HttpResult.success();
-    }
-
-    @ApiOperation(value = "获取动物类目树")
-    @GetMapping("/getCategoryTree")
-    public HttpResult<CategoryTreeDTO> getCategoryTree() {
-        return HttpResult.success(categoryService.getCategoryTree());
     }
 
 }

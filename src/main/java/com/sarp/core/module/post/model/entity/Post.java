@@ -65,10 +65,10 @@ public class Post extends BaseDO {
     private Integer status;
 
     /**
-     * 流浪动物id
+     * 宠物id
      */
     @TableField(value = "animal_id")
-    @ApiModelProperty(value="流浪动物id")
+    @ApiModelProperty(value="宠物id")
     private String animalId;
 
     /**
@@ -79,24 +79,24 @@ public class Post extends BaseDO {
     private String categoryId;
 
     /**
-     * 动物名称
+     * 宠物名称
      */
     @TableField(value = "animal_name")
-    @ApiModelProperty(value="动物名称")
+    @ApiModelProperty(value="宠物名称")
     private String animalName;
 
     /**
-     * 动物性别
+     * 宠物性别
      */
     @TableField(value = "animal_gender")
-    @ApiModelProperty(value="动物性别")
+    @ApiModelProperty(value="宠物性别")
     private String animalGender;
 
     /**
-     * 动物信息描述
+     * 宠物信息描述
      */
     @TableField(value = "animal_desc")
-    @ApiModelProperty(value="动物信息描述")
+    @ApiModelProperty(value="宠物信息描述")
     private String animalDesc;
 
     /**

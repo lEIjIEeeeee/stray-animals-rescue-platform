@@ -14,7 +14,7 @@ import com.sarp.core.module.animal.model.entity.Animal;
 import com.sarp.core.module.animal.service.AnimalService;
 import com.sarp.core.module.animal.util.AnimalNoGenerateUtils;
 import com.sarp.core.module.auth.model.dto.LoginUser;
-import com.sarp.core.module.category.dao.CategoryMapper;
+import com.sarp.core.module.category.service.CategoryService;
 import com.sarp.core.module.common.enums.AuditResultEnum;
 import com.sarp.core.module.common.enums.BizTypeEnum;
 import com.sarp.core.module.common.enums.HttpResultCode;
@@ -36,8 +36,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -52,11 +50,11 @@ import java.util.stream.Collectors;
 public class PostService {
 
     private PostMapper postMapper;
-    private CategoryMapper categoryMapper;
     private AnimalMapper animalMapper;
     private MemberMapper memberMapper;
 
     private AnimalService animalService;
+    private CategoryService categoryService;
 
     @Transactional(rollbackFor = Exception.class)
     public void submitPost(SubmitPostRequest request) {
@@ -137,7 +135,7 @@ public class PostService {
                                                         .ge(request.getAuditStartDate() != null, Post::getAuditTime, request.getAuditStartDate())
                                                         .le(request.getAuditEndDate() != null, Post::getAuditTime, request.getAuditEndDate());
         if (request.getStatus() != null) {
-            queryWrapper.eq(Post::getStatus, request.getStatus());
+            queryWrapper.eq(Post::getStatus, request.getStatus().getCode());
         }
 
         boolean queryFlag = buildPostListQueryWrapper(request, queryWrapper);
@@ -179,7 +177,7 @@ public class PostService {
         }
 
         if (CollUtil.isNotEmpty(request.getCategoryIds())) {
-            Set<String> recurveDownCategoryIds = getRecurveDownCategoryIds(request.getCategoryIds());
+            Set<String> recurveDownCategoryIds = categoryService.getRecursiveCategoryIds(request.getCategoryIds());
             if (CollUtil.isEmpty(recurveDownCategoryIds)) {
                 return false;
             }
@@ -274,24 +272,6 @@ public class PostService {
     public void delete(PostDeleteRequest request) {
         Post post = getByIdWithExp(request.getId());
         postMapper.deleteByIdWithFill(post);
-    }
-
-    private Set<String> getRecurveDownCategoryIds(Collection<String> categoryIds) {
-        Set<String> recurveDownCategoryIds = CollUtil.newHashSet();
-
-        if (CollUtil.isEmpty(categoryIds)) {
-            return Collections.emptySet();
-        }
-
-        for (String id : categoryIds) {
-            Set<String> childIds = categoryMapper.recursiveDownCategoryId(id);
-            if (CollUtil.isNotEmpty(childIds)) {
-                recurveDownCategoryIds.addAll(childIds);
-            }
-        }
-
-        return CollUtil.isNotEmpty(recurveDownCategoryIds)
-                ? recurveDownCategoryIds : Collections.emptySet();
     }
 
     private Post getByIdWithExp(String id) {

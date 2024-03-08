@@ -19,7 +19,7 @@ public class PostResponse extends BaseResponse {
     @ApiModelProperty(value = "标题")
     private String title;
 
-    @ApiModelProperty(value = "动物名称")
+    @ApiModelProperty(value = "宠物名称")
     private String animalName;
 
     @ApiModelProperty(value = "动物类目id")

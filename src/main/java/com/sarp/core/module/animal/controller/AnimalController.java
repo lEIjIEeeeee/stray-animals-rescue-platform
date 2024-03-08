@@ -20,7 +20,7 @@ import java.util.List;
  * @date 2024/3/3 23:07
  */
 
-@Api(tags = "用户端动物模块-流浪动物相关接口")
+@Api(tags = "用户端宠物模块-流浪动物相关接口")
 @Validated
 @Slf4j
 @AllArgsConstructor
@@ -30,7 +30,7 @@ public class AnimalController {
 
     private AnimalService animalService;
 
-    @ApiOperation(value = "发帖时获取动物下拉列表")
+    @ApiOperation(value = "发帖时获取宠物下拉列表")
     @GetMapping("/getAnimalListByCategoryId")
     public HttpResult<List<AnimalSelectListDTO>> getAnimalListByCategoryId(AnimalSelectRequest request) {
         List<AnimalSelectListDTO> animalSelectList = JavaBeanUtils.mapList(animalService.getAnimalListByCategoryId(request), AnimalSelectListDTO.class);

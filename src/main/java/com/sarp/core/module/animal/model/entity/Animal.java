@@ -27,10 +27,17 @@ import lombok.experimental.SuperBuilder;
 public class Animal extends BaseDO {
 
     /**
-     * 动物编号
+     * 名称
+     */
+    @TableField(value = "`name`")
+    @ApiModelProperty(value = "名称")
+    private String name;
+
+    /**
+     * 宠物编号
      */
     @TableField(value = "animal_no")
-    @ApiModelProperty(value = "动物编号")
+    @ApiModelProperty(value = "宠物编号")
     private String animalNo;
 
     /**
@@ -46,13 +53,6 @@ public class Animal extends BaseDO {
     @TableField(value = "owner_id")
     @ApiModelProperty(value = "当前主人id")
     private String ownerId;
-
-    /**
-     * 名称
-     */
-    @TableField(value = "`name`")
-    @ApiModelProperty(value = "名称")
-    private String name;
 
     /**
      * 性别 F-雌性 M-雄性

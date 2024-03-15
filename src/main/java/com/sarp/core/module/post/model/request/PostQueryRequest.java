@@ -45,4 +45,7 @@ public class PostQueryRequest extends BaseQueryRequest {
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date createEndDate;
 
+    @ApiModelProperty(value = "用户id")
+    private String userId;
+
 }

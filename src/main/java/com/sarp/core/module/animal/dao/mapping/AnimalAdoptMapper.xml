@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sarp.core.module.animal.dao.AnimalAdoptMapper">
+  <resultMap id="BaseResultMap" type="com.sarp.core.module.animal.model.entity.AnimalAdopt">
+    <!--@mbg.generated-->
+    <!--@Table tbl_animal_adopt-->
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="animal_id" jdbcType="VARCHAR" property="animalId" />
+    <result column="post_id" jdbcType="VARCHAR" property="postId" />
+    <result column="adopt_user" jdbcType="VARCHAR" property="adoptUser" />
+    <result column="end_time" jdbcType="TIMESTAMP" property="endTime" />
+    <result column="create_id" jdbcType="VARCHAR" property="createId" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="update_id" jdbcType="VARCHAR" property="updateId" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+    <result column="is_del" jdbcType="INTEGER" property="isDel" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    <!--@mbg.generated-->
+    id, animal_id, post_id, adopt_user, end_time, create_id, create_time, update_id, 
+    update_time, is_del
+  </sql>
+</mapper>

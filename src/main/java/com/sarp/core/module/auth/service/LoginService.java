@@ -15,11 +15,13 @@ import com.sarp.core.exception.BizException;
 import com.sarp.core.module.auth.constant.AuthConstants;
 import com.sarp.core.module.auth.dao.UserAuthMapper;
 import com.sarp.core.module.auth.model.dto.LoginUser;
+import com.sarp.core.module.auth.model.dto.RegisterReturnDTO;
 import com.sarp.core.module.auth.model.dto.SysTokenLoginDTO;
 import com.sarp.core.module.auth.model.entity.UserAuth;
 import com.sarp.core.module.auth.model.request.LoginRequest;
 import com.sarp.core.module.auth.model.request.RegisterRequest;
 import com.sarp.core.module.auth.util.AuthNoGenerateUtils;
+import com.sarp.core.module.common.enums.GenderEnum;
 import com.sarp.core.module.common.enums.HttpResultCode;
 import com.sarp.core.module.user.dao.MemberMapper;
 import com.sarp.core.module.user.dao.UserMapper;
@@ -61,9 +63,10 @@ public class LoginService {
     private MemberService memberService;
 
     @Transactional(rollbackFor = Exception.class)
-    public void register(RegisterRequest request) {
-        if (ObjectUtil.notEqual(request.getPassword(), request.getConfirmPassword())) {
-            throw new BizException(HttpResultCode.BIZ_EXCEPTION, "两次密码不一致");
+    public RegisterReturnDTO register(RegisterRequest request) {
+        User userByPhone = userService.getUserByPhone(request.getPhone());
+        if (ObjectUtil.isNotNull(userByPhone)) {
+            throw new BizException(HttpResultCode.DATA_EXISTED, "手机号已被注册");
         }
 
         String salt = AuthNoGenerateUtils.generateSalt();
@@ -73,13 +76,12 @@ public class LoginService {
                         .salt(salt)
                         .phone(request.getPhone())
                         .name(request.getNickName())
-                        .gender(request.getGender().name())
+                        .gender(GenderEnum.F.name())
                         .userType(UserTypeEnum.NORMAL_USER.name())
                         .status(UserStatusEnum.NORMAL.getCode())
                         .createTime(DateUtil.date())
                         .updateTime(DateUtil.date())
                         .build();
-
         userMapper.insert(user);
 
         Member member = Member.builder()
@@ -88,11 +90,15 @@ public class LoginService {
                               .nickName(request.getNickName())
                               .realName(request.getRealName())
                               .phone(request.getPhone())
-                              .gender(request.getGender().name())
+                              .gender(GenderEnum.F.name())
                               .status(UserStatusEnum.NORMAL.getCode())
                               .build();
-
         memberMapper.insert(member);
+
+        return RegisterReturnDTO.builder()
+                                .nickName(user.getName())
+                                .account(user.getAccount())
+                                .build();
     }
 
     private String generateAccount() {

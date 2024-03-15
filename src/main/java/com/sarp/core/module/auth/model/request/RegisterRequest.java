@@ -1,6 +1,5 @@
 package com.sarp.core.module.auth.model.request;
 
-import com.sarp.core.module.common.enums.GenderEnum;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -8,7 +7,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 
 /**
  * @date 2024/1/27 16:40
@@ -34,10 +32,6 @@ public class RegisterRequest {
 
     @ApiModelProperty(value = "真实姓名")
     private String realName;
-
-    @ApiModelProperty(value = "性别")
-    @NotNull(message = "性别不能为空")
-    private GenderEnum gender;
 
     @ApiModelProperty(value = "手机号")
     @NotBlank(message = "手机号不能为空")

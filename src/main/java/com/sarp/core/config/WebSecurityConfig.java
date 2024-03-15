@@ -10,7 +10,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.ArrayList;
@@ -31,7 +30,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter implements W
     static {
         EXCLUDED_URL_LIST = new ArrayList<>();
         EXCLUDED_URL_LIST.add("/doc.html");
-        EXCLUDED_URL_LIST.add("/authModule/register");
+        EXCLUDED_URL_LIST.add("/authModule/login/register");
         EXCLUDED_URL_LIST.add("/authModule/login/login");
     }
 

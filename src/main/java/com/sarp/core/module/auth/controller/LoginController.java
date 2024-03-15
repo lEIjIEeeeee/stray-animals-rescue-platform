@@ -1,6 +1,7 @@
 package com.sarp.core.module.auth.controller;
 
 import com.sarp.core.module.auth.model.dto.LoginUser;
+import com.sarp.core.module.auth.model.dto.RegisterReturnDTO;
 import com.sarp.core.module.auth.model.dto.SysTokenLoginDTO;
 import com.sarp.core.module.auth.model.request.LoginRequest;
 import com.sarp.core.module.auth.model.request.RegisterRequest;
@@ -29,9 +30,8 @@ public class LoginController {
 
     @ApiOperation(value = "用户注册接口")
     @PostMapping("/register")
-    public HttpResult<Void> register(@RequestBody @Validated RegisterRequest request) {
-        loginService.register(request);
-        return HttpResult.success();
+    public HttpResult<RegisterReturnDTO> register(@RequestBody @Validated RegisterRequest request) {
+        return HttpResult.success(loginService.register(request));
     }
 
     @ApiOperation(value = "用户登录接口")

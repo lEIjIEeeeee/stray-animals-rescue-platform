@@ -7,6 +7,8 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.sarp.core.exception.BizException;
+import com.sarp.core.module.animal.dao.AnimalMapper;
+import com.sarp.core.module.animal.model.entity.Animal;
 import com.sarp.core.module.category.dao.CategoryMapper;
 import com.sarp.core.module.category.model.entity.Category;
 import com.sarp.core.module.category.model.request.CategoryChangeStatusRequest;
@@ -38,6 +40,7 @@ import java.util.Set;
 public class CategoryService extends ServiceImpl<CategoryMapper, Category> {
 
     private CategoryMapper categoryMapper;
+    private AnimalMapper animalMapper;
 
     public Page<Category> listPage(CategoryQueryRequest request) {
         LambdaQueryWrapper<Category> lqw = Wrappers.lambdaQuery(Category.class)
@@ -111,6 +114,11 @@ public class CategoryService extends ServiceImpl<CategoryMapper, Category> {
     @Transactional(rollbackFor = Exception.class)
     public void delete(CategoryDeleteRequest request) {
         Category category = getByIdWithExp(request.getId());
+        List<Animal> animalList = animalMapper.selectList(Wrappers.lambdaQuery(Animal.class)
+                                                                  .eq(Animal::getCategoryId, category.getId()));
+        if (CollUtil.isNotEmpty(animalList)) {
+            throw new BizException(HttpResultCode.BIZ_EXCEPTION, "该动物分类下有记录在案的流浪动物，无法进行删除操作");
+        }
         categoryMapper.deleteByIdWithFill(category);
     }
 

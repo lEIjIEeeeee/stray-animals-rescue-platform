@@ -2,6 +2,8 @@ package com.sarp.core.module.common.controller;
 
 import com.sarp.core.module.common.model.HttpResult;
 import com.sarp.core.module.common.model.dto.CategoryTreeDTO;
+import com.sarp.core.module.common.model.dto.PersonalInfoDTO;
+import com.sarp.core.module.common.model.dto.UserBizCountsDTO;
 import com.sarp.core.module.common.model.dto.UserListDTO;
 import com.sarp.core.module.common.service.CommonService;
 import com.sarp.core.util.JavaBeanUtils;
@@ -40,6 +42,18 @@ public class CommonController {
     @GetMapping("/getAnimalOwnerList")
     public HttpResult<List<UserListDTO>> getAnimalOwnerList() {
         return HttpResult.success(JavaBeanUtils.mapList(commonService.getAnimalOwnerList(), UserListDTO.class));
+    }
+
+    @ApiOperation(value = "获取登录用户个人信息")
+    @GetMapping("/personalInfo")
+    public HttpResult<PersonalInfoDTO> personalInfo() {
+        return HttpResult.success(commonService.personalInfo());
+    }
+
+    @ApiOperation(value = "获取用户各个模块业务数据统计")
+    @GetMapping("/getCounts")
+    public HttpResult<UserBizCountsDTO> getCounts() {
+        return HttpResult.success(commonService.getCounts());
     }
 
 }

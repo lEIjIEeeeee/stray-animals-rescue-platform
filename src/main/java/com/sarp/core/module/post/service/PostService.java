@@ -119,8 +119,8 @@ public class PostService {
 
     public Page<Post> listPage(PostQueryRequest request) {
         LambdaQueryWrapper<Post> queryWrapper = Wrappers.lambdaQuery(Post.class)
+                                                        .eq(StrUtil.isNotBlank(request.getUserId()), Post::getCreateId, request.getUserId())
                                                         .ne(Post::getStatus, PostStatusEnum.AUDIT_WAIT.getCode())
-                                                        //TODO 待审核排在最前面
                                                         .isNotNull(Post::getStatus);
 
         boolean queryFlag = buildPostListQueryWrapper(request, queryWrapper);

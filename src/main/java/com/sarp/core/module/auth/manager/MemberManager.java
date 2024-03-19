@@ -1,4 +1,4 @@
-package com.sarp.core.module.user.service;
+package com.sarp.core.module.auth.manager;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.sarp.core.exception.BizException;
@@ -6,17 +6,15 @@ import com.sarp.core.module.common.enums.HttpResultCode;
 import com.sarp.core.module.user.dao.MemberMapper;
 import com.sarp.core.module.user.model.entity.Member;
 import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 /**
- * @date 2024/1/26 16:26
+ * @date 2024/3/19 10:29
  */
 
-@Service
-@Slf4j
+@Component
 @AllArgsConstructor
-public class MemberService {
+public class MemberManager {
 
     private MemberMapper memberMapper;
 

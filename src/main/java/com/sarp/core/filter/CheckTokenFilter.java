@@ -14,6 +14,7 @@ import com.sarp.core.module.auth.model.entity.UserAuth;
 import com.sarp.core.module.auth.service.LoginService;
 import com.sarp.core.module.common.enums.HttpResultCode;
 import com.sarp.core.module.common.model.HttpResult;
+import com.sarp.core.module.user.enums.UserStatusEnum;
 import com.sarp.core.security.jwt.JwtPayLoad;
 import com.sarp.core.security.jwt.JwtTokenUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -113,6 +114,12 @@ public class CheckTokenFilter extends OncePerRequestFilter {
     }
 
     private void checkLoginUserInfo(LoginUser loginUser) {
+        if (UserStatusEnum.FREEZE.getCode().equals(loginUser.getStatus())) {
+            throw new BizException(HttpResultCode.USER_STATUS_ERROR, "用户已被冻结");
+        }
+        if (UserStatusEnum.DELETE.getCode().equals(loginUser.getStatus())) {
+            throw new BizException(HttpResultCode.USER_STATUS_ERROR, "用户已被删除");
+        }
         if (StrUtil.isBlank(loginUser.getId())) {
             throw new BizException(HttpResultCode.BIZ_DATA_EXCEPTION, "登录用户没有用户ID信息");
         }

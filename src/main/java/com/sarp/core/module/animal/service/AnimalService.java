@@ -1,7 +1,6 @@
 package com.sarp.core.module.animal.service;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
@@ -11,6 +10,7 @@ import com.sarp.core.exception.BizException;
 import com.sarp.core.module.animal.dao.AnimalMapper;
 import com.sarp.core.module.animal.enums.AnimalSearchTypeEnum;
 import com.sarp.core.module.animal.helper.AnimalHelper;
+import com.sarp.core.module.animal.manager.AnimalManager;
 import com.sarp.core.module.animal.model.dto.PlatformAnimalDetailDTO;
 import com.sarp.core.module.animal.model.entity.Animal;
 import com.sarp.core.module.animal.model.request.*;
@@ -47,6 +47,8 @@ public class AnimalService {
     private MemberMapper memberMapper;
 
     private AnimalHelper animalHelper;
+
+    private AnimalManager animalManager;
 
     private CategoryService categoryService;
 
@@ -97,7 +99,7 @@ public class AnimalService {
     }
 
     public PlatformAnimalDetailDTO get(String id) {
-        Animal animal = getByIdWithExp(id);
+        Animal animal = animalManager.getByIdWithExp(id);
         PlatformAnimalDetailDTO animalDetail = JavaBeanUtils.map(animal, PlatformAnimalDetailDTO.class);
         animalHelper.fillAnimalDetailData(animalDetail);
         return animalDetail;
@@ -105,7 +107,7 @@ public class AnimalService {
 
     @Transactional(rollbackFor = Exception.class)
     public void edit(PlatformAnimalEditRequest request) {
-        Animal animal = getByIdWithExp(request.getId());
+        Animal animal = animalManager.getByIdWithExp(request.getId());
 
         if (YesOrNoEnum.Y.getCode().equals(animal.getIsAdopt())
                 && StrUtil.isBlank(request.getOwnerId())) {
@@ -121,13 +123,13 @@ public class AnimalService {
 
     @Transactional(rollbackFor = Exception.class)
     public void delete(AnimalDeleteRequest request) {
-        Animal animal = getByIdWithExp(request.getId());
+        Animal animal = animalManager.getByIdWithExp(request.getId());
         animalMapper.deleteByIdWithFill(animal);
     }
 
     @Transactional(rollbackFor = Exception.class)
     public void changeAdoptStatus(ChangeAdoptStatusRequest request) {
-        Animal animal = getByIdWithExp(request.getId());
+        Animal animal = animalManager.getByIdWithExp(request.getId());
         if (YesOrNoEnum.Y.getCode().equals(animal.getIsLost())) {
             throw new BizException(HttpResultCode.BIZ_EXCEPTION, "当前宠物已遗失，无法更改领养状态");
         }
@@ -137,7 +139,7 @@ public class AnimalService {
 
     @Transactional(rollbackFor = Exception.class)
     public void changeLostStatus(ChangeLostStatusRequest request) {
-        Animal animal = getByIdWithExp(request.getId());
+        Animal animal = animalManager.getByIdWithExp(request.getId());
         animal.setIsLost(request.getIsLost());
         animalMapper.updateById(animal);
     }
@@ -156,14 +158,6 @@ public class AnimalService {
             queryWrapper.in(CollUtil.isNotEmpty(categoryIds), Animal::getCategoryId, categoryIds);
         }
         return animalMapper.selectList(queryWrapper);
-    }
-
-    public Animal getByIdWithExp(String id) {
-        Animal animal = animalMapper.selectById(id);
-        if (ObjectUtil.isNull(animal)) {
-            throw new BizException(HttpResultCode.DATA_NOT_EXISTED);
-        }
-        return animal;
     }
 
 }

@@ -10,8 +10,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.sarp.core.context.ContextUtils;
 import com.sarp.core.exception.BizException;
 import com.sarp.core.module.animal.dao.AnimalMapper;
+import com.sarp.core.module.animal.manager.AnimalManager;
 import com.sarp.core.module.animal.model.entity.Animal;
-import com.sarp.core.module.animal.service.AnimalService;
 import com.sarp.core.module.animal.util.AnimalNoGenerateUtils;
 import com.sarp.core.module.auth.model.dto.LoginUser;
 import com.sarp.core.module.category.service.CategoryService;
@@ -53,7 +53,8 @@ public class PostService {
     private AnimalMapper animalMapper;
     private MemberMapper memberMapper;
 
-    private AnimalService animalService;
+    private AnimalManager animalManager;
+
     private CategoryService categoryService;
 
     @Transactional(rollbackFor = Exception.class)
@@ -93,7 +94,7 @@ public class PostService {
 
     private void checkAnimalOwner(SubmitPostRequest request, String userId) {
         if (StrUtil.isNotBlank(request.getAnimalId())) {
-            Animal animal = animalService.getByIdWithExp(request.getAnimalId());
+            Animal animal = animalManager.getByIdWithExp(request.getAnimalId());
             if (ObjectUtil.notEqual(animal.getOwnerId(), userId)) {
                 throw new BizException(HttpResultCode.BIZ_EXCEPTION, "当前选择不是你名下的宠物，没有操作权限");
             }
@@ -101,7 +102,7 @@ public class PostService {
     }
 
     private void checkAnimalStatus(SubmitPostRequest request) {
-        Animal animal = animalService.getByIdWithExp(request.getAnimalId());
+        Animal animal = animalManager.getByIdWithExp(request.getAnimalId());
         if (YesOrNoEnum.Y.getCode().equals(animal.getIsLost())
                 && BizTypeEnum.ADOPT_BIZ.equals(request.getBizType())) {
             throw new BizException(HttpResultCode.BIZ_EXCEPTION, "当前宠物已遗失，无法发起领养帖");
@@ -219,7 +220,7 @@ public class PostService {
 
     private void updateOrInsertAnimalRecord(Post post) {
         if (StrUtil.isNotBlank(post.getAnimalId())) {
-            Animal animal = animalService.getByIdWithExp(post.getAnimalId());
+            Animal animal = animalManager.getByIdWithExp(post.getAnimalId());
             if (ObjectUtil.isNull(animal)) {
                 throw new BizException(HttpResultCode.DATA_NOT_EXISTED);
             }

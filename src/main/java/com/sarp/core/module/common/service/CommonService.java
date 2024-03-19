@@ -8,20 +8,20 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.sarp.core.context.ContextUtils;
 import com.sarp.core.module.animal.dao.AnimalMapper;
 import com.sarp.core.module.animal.model.entity.Animal;
-import com.sarp.core.module.common.model.request.PersonalListQueryRequest;
+import com.sarp.core.module.auth.manager.UserManager;
 import com.sarp.core.module.category.dao.CategoryMapper;
 import com.sarp.core.module.category.model.entity.Category;
 import com.sarp.core.module.common.constant.NumberConstants;
 import com.sarp.core.module.common.model.dto.CategoryTreeDTO;
 import com.sarp.core.module.common.model.dto.PersonalInfoDTO;
 import com.sarp.core.module.common.model.dto.UserBizCountsDTO;
+import com.sarp.core.module.common.model.request.PersonalListQueryRequest;
 import com.sarp.core.module.post.dao.PostMapper;
 import com.sarp.core.module.post.model.entity.Post;
 import com.sarp.core.module.user.dao.UserMapper;
 import com.sarp.core.module.user.enums.UserStatusEnum;
 import com.sarp.core.module.user.enums.UserTypeEnum;
 import com.sarp.core.module.user.model.entity.User;
-import com.sarp.core.module.user.service.UserService;
 import com.sarp.core.util.JavaBeanUtils;
 import com.sarp.core.util.PageUtils;
 import lombok.AllArgsConstructor;
@@ -46,7 +46,8 @@ public class CommonService {
     private UserMapper userMapper;
     private AnimalMapper animalMapper;
     private PostMapper postMapper;
-    private UserService userService;
+
+    private UserManager userManager;
 
     public CategoryTreeDTO getCategoryTree() {
         CategoryTreeDTO categoryTree = getCategoryEmptyTree();
@@ -97,7 +98,7 @@ public class CommonService {
 
     public PersonalInfoDTO personalInfo() {
         String userId = ContextUtils.getCurrentUserId();
-        User user = userService.getByIdWithExp(userId);
+        User user = userManager.getByIdWithExp(userId);
         PersonalInfoDTO personalInfo = PersonalInfoDTO.builder()
                                                       .id(userId)
                                                       .avatar(user.getAvatar())

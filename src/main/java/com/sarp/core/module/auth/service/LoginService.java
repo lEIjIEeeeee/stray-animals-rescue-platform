@@ -14,6 +14,8 @@ import com.sarp.core.context.HttpContext;
 import com.sarp.core.exception.BizException;
 import com.sarp.core.module.auth.constant.AuthConstants;
 import com.sarp.core.module.auth.dao.UserAuthMapper;
+import com.sarp.core.module.auth.manager.MemberManager;
+import com.sarp.core.module.auth.manager.UserManager;
 import com.sarp.core.module.auth.model.dto.LoginUser;
 import com.sarp.core.module.auth.model.dto.RegisterReturnDTO;
 import com.sarp.core.module.auth.model.dto.SysTokenLoginDTO;
@@ -29,8 +31,6 @@ import com.sarp.core.module.user.enums.UserStatusEnum;
 import com.sarp.core.module.user.enums.UserTypeEnum;
 import com.sarp.core.module.user.model.entity.Member;
 import com.sarp.core.module.user.model.entity.User;
-import com.sarp.core.module.user.service.MemberService;
-import com.sarp.core.module.user.service.UserService;
 import com.sarp.core.security.jwt.JwtPayLoad;
 import com.sarp.core.security.jwt.JwtTokenUtils;
 import com.sarp.core.util.JavaBeanUtils;
@@ -59,12 +59,12 @@ public class LoginService {
     private UserAuthMapper userAuthMapper;
     private ObjectMapper objectMapper;
 
-    private UserService userService;
-    private MemberService memberService;
+    private UserManager userManager;
+    private MemberManager memberManager;
 
     @Transactional(rollbackFor = Exception.class)
     public RegisterReturnDTO register(RegisterRequest request) {
-        User userByPhone = userService.getUserByPhone(request.getPhone());
+        User userByPhone = userManager.getUserByPhone(request.getPhone());
         if (ObjectUtil.isNotNull(userByPhone)) {
             throw new BizException(HttpResultCode.DATA_EXISTED, "手机号已被注册");
         }
@@ -101,7 +101,7 @@ public class LoginService {
                                 .build();
     }
 
-    private String generateAccount() {
+    public String generateAccount() {
         String account = AuthNoGenerateUtils.generateAccount();
         List<Member> memberList = memberMapper.selectList(Wrappers.lambdaQuery(Member.class));
         if (CollUtil.isNotEmpty(memberList)) {
@@ -115,7 +115,7 @@ public class LoginService {
         return account;
     }
 
-    private String encryptPwd(String password, String salt) {
+    public static String encryptPwd(String password, String salt) {
         if (StrUtil.isBlank(password)) {
             throw new BizException(HttpResultCode.BIZ_EXCEPTION, "密码不能为空!");
         }
@@ -127,9 +127,9 @@ public class LoginService {
 
     @Transactional(rollbackFor = Exception.class)
     public LoginUser login(LoginRequest request) {
-        User user = userService.getUserByAccount(request.getAccount());
+        User user = userManager.getUserByAccount(request.getAccount());
         if (ObjectUtil.isNull(user)) {
-            user = userService.getUserByPhone(request.getAccount());
+            user = userManager.getUserByPhone(request.getAccount());
         }
 
         if (ObjectUtil.isNull(user)) {
@@ -181,7 +181,7 @@ public class LoginService {
     }
 
     private void fillLoginUserInfo(LoginUser loginUser) {
-        Member member = memberService.getByIdWithExp(loginUser.getId());
+        Member member = memberManager.getByIdWithExp(loginUser.getId());
         loginUser.setNickName(member.getNickName());
         loginUser.setRealName(member.getRealName());
     }

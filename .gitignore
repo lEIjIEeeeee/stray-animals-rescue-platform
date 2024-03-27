@@ -54,5 +54,7 @@ Thumbs.db
 mvnw.cmd
 mvnw
 
+# Upload Media File
+/src/main/resources/static/image/
+
 # Files or folders need to be retained
-# ...

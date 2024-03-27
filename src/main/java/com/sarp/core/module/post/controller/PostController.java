@@ -18,8 +18,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.constraints.NotBlank;
-
 /**
  * @date 2024/1/30 11:18
  */
@@ -60,13 +58,6 @@ public class PostController {
         PageVO<PostResponse> postResponsePageVO = CommonConvert.convertPageToPageVo(postPage, PostResponse.class);
         postHelper.fillPostListData(postResponsePageVO.getDataList());
         return HttpResult.success(postResponsePageVO);
-    }
-
-    @ApiOperation(value = "查询详情")
-    @GetMapping("/get")
-    public HttpResult<Void> get(@RequestParam @NotBlank String id) {
-        System.out.println(1);
-        return HttpResult.success();
     }
 
 }

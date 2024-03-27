@@ -12,9 +12,16 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 import lombok.experimental.SuperBuilder;
 
+import java.math.BigDecimal;
+import java.util.Date;
+
+/**
+ * @date 2024/3/25 9:12
+ *
+*/
+
 /**
  * 流浪动物信息表
- * @date 2024/1/30 17:55
  */
 @ApiModel(description = "流浪动物信息表")
 @Data
@@ -41,10 +48,10 @@ public class Animal extends BaseDO {
     private String animalNo;
 
     /**
-     * 动物类目id
+     * 分类id
      */
     @TableField(value = "category_id")
-    @ApiModelProperty(value = "动物类目id")
+    @ApiModelProperty(value = "分类id")
     private String categoryId;
 
     /**
@@ -60,6 +67,20 @@ public class Animal extends BaseDO {
     @TableField(value = "gender")
     @ApiModelProperty(value = "性别 F-雌性 M-雄性")
     private String gender;
+
+    /**
+     * 出生日期
+     */
+    @TableField(value = "birthday")
+    @ApiModelProperty(value = "出生日期")
+    private Date birthday;
+
+    /**
+     * 体重（千克）
+     */
+    @TableField(value = "weight")
+    @ApiModelProperty(value = "体重（千克）")
+    private BigDecimal weight;
 
     /**
      * 是否领养 0-否 1-是

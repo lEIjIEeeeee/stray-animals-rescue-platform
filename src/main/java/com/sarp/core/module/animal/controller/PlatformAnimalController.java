@@ -39,7 +39,7 @@ public class PlatformAnimalController {
     public HttpResult<PageVO<PlatformAnimalResponse>> listPage(@Validated(BaseQueryRequest.ListPage.class)
                                                                        PlatformAnimalQueryRequest request) {
         PageVO<PlatformAnimalResponse> responsePageVO = CommonConvert.convertPageToPageVo(animalService.listPagePlatform(request), PlatformAnimalResponse.class);
-        animalHelper.fillAnimalListData(responsePageVO.getDataList());
+        animalHelper.fillPlatformAnimalListData(responsePageVO.getDataList());
         return HttpResult.success(responsePageVO);
     }
 
@@ -49,7 +49,12 @@ public class PlatformAnimalController {
         return HttpResult.success(animalService.get(id));
     }
 
-    //TODO 新增一个宠物信息
+    @ApiOperation(value = "新增宠物信息")
+    @PostMapping("/add")
+    public HttpResult<Void> add(@RequestBody @Validated PlatformAnimalAddRequest request) {
+        animalService.add(request);
+        return HttpResult.success();
+    }
 
     @ApiOperation(value = "编辑宠物信息")
     @PostMapping("/edit")

@@ -1,9 +1,15 @@
 package com.sarp.core.module.animal.controller;
 
+import com.sarp.core.module.animal.helper.AnimalHelper;
 import com.sarp.core.module.animal.model.dto.AnimalSelectListDTO;
+import com.sarp.core.module.animal.model.request.AnimalQueryRequest;
 import com.sarp.core.module.animal.model.request.AnimalSelectRequest;
+import com.sarp.core.module.animal.model.response.AnimalResponse;
 import com.sarp.core.module.animal.service.AnimalService;
 import com.sarp.core.module.common.model.HttpResult;
+import com.sarp.core.module.common.model.convert.CommonConvert;
+import com.sarp.core.module.common.model.request.BaseQueryRequest;
+import com.sarp.core.module.common.model.vo.PageVO;
 import com.sarp.core.util.JavaBeanUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -29,6 +35,17 @@ import java.util.List;
 public class AnimalController {
 
     private AnimalService animalService;
+
+    private AnimalHelper animalHelper;
+
+    @ApiOperation(value = "分页查询宠物信息列表")
+    @GetMapping("/listPage")
+    public HttpResult<PageVO<AnimalResponse>> listPage(@Validated(BaseQueryRequest.ListPage.class)
+                                                               AnimalQueryRequest request) {
+        PageVO<AnimalResponse> animalResponsePageVO = CommonConvert.convertPageToPageVo(animalService.listPage(request), AnimalResponse.class);
+        animalHelper.fillAnimalListData(animalResponsePageVO.getDataList());
+        return HttpResult.success(animalResponsePageVO);
+    }
 
     @ApiOperation(value = "发帖时获取宠物下拉列表")
     @GetMapping("/getAnimalListByCategoryId")

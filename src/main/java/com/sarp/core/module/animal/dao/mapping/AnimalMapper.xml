@@ -5,11 +5,13 @@
     <!--@mbg.generated-->
     <!--@Table tbl_animal-->
     <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
     <result column="animal_no" jdbcType="VARCHAR" property="animalNo" />
     <result column="category_id" jdbcType="VARCHAR" property="categoryId" />
     <result column="owner_id" jdbcType="VARCHAR" property="ownerId" />
-    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="birthday" jdbcType="TIMESTAMP" property="birthday" />
     <result column="gender" jdbcType="VARCHAR" property="gender" />
+    <result column="weight" jdbcType="DECIMAL" property="weight" />
     <result column="is_adopt" jdbcType="INTEGER" property="isAdopt" />
     <result column="is_lost" jdbcType="INTEGER" property="isLost" />
     <result column="desc" jdbcType="VARCHAR" property="desc" />
@@ -21,7 +23,7 @@
   </resultMap>
   <sql id="Base_Column_List">
     <!--@mbg.generated-->
-    id, animal_no, category_id, owner_id, `name`, gender, is_adopt, is_lost, `desc`,
-    create_id, create_time, update_id, update_time, is_del
+    id, `name`, animal_no, category_id, owner_id, birthday, gender, weight, is_adopt, 
+    is_lost, `desc`, create_id, create_time, update_id, update_time, is_del
   </sql>
 </mapper>

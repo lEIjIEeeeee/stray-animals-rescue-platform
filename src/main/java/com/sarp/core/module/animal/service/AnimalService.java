@@ -14,7 +14,9 @@ import com.sarp.core.module.animal.manager.AnimalManager;
 import com.sarp.core.module.animal.model.dto.PlatformAnimalDetailDTO;
 import com.sarp.core.module.animal.model.entity.Animal;
 import com.sarp.core.module.animal.model.request.*;
+import com.sarp.core.module.animal.util.AnimalNoGenerateUtils;
 import com.sarp.core.module.auth.model.dto.LoginUser;
+import com.sarp.core.module.auth.util.AuthNoGenerateUtils;
 import com.sarp.core.module.category.dao.CategoryMapper;
 import com.sarp.core.module.category.service.CategoryService;
 import com.sarp.core.module.common.enums.HttpResultCode;
@@ -52,11 +54,23 @@ public class AnimalService {
 
     private CategoryService categoryService;
 
+    public Page<Animal> listPage(AnimalQueryRequest request) {
+        LambdaQueryWrapper<Animal> queryWrapper = Wrappers.lambdaQuery(Animal.class)
+                                                          .and(StrUtil.isNotBlank(request.getSearchContent()),
+                                                                  wrapper -> wrapper.or(wp -> wp.like(Animal::getName, request.getSearchContent()))
+                                                                                    .or(wp -> wp.like(Animal::getAnimalNo, request.getSearchContent()))
+                                                          )
+                                                          .eq(request.getIsAdopt() != null, Animal::getIsAdopt, request.getIsAdopt())
+                                                          .eq(request.getIsLost() != null, Animal::getIsLost, request.getIsLost())
+                                                          .orderByDesc(Animal::getUpdateTime);
+        return animalMapper.selectPage(PageUtils.createPage(request), queryWrapper);
+    }
+
     public Page<Animal> listPagePlatform(PlatformAnimalQueryRequest request) {
         LambdaQueryWrapper<Animal> queryWrapper = Wrappers.lambdaQuery(Animal.class)
                                                           .ge(request.getCreateStartDate() != null, Animal::getCreateTime, request.getCreateStartDate())
                                                           .le(request.getCreateEndDate() != null, Animal::getCreateTime, request.getCreateEndDate())
-                                                          .orderByDesc(Animal::getAnimalNo)
+//                                                          .orderByDesc(Animal::getAnimalNo)
                                                           .orderByDesc(Animal::getUpdateTime);
         if (request.getSearchType() != null
                 && StrUtil.isNotBlank(request.getSearchContent())) {
@@ -103,6 +117,14 @@ public class AnimalService {
         PlatformAnimalDetailDTO animalDetail = JavaBeanUtils.map(animal, PlatformAnimalDetailDTO.class);
         animalHelper.fillAnimalDetailData(animalDetail);
         return animalDetail;
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void add(PlatformAnimalAddRequest request) {
+        Animal animal = JavaBeanUtils.map(request, Animal.class);
+        animal.setAnimalNo(AnimalNoGenerateUtils.generateAnimalNo())
+              .setGender(request.getGender().name());
+        animalMapper.insert(animal);
     }
 
     @Transactional(rollbackFor = Exception.class)

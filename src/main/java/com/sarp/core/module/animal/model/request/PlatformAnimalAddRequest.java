@@ -14,18 +14,14 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 /**
- * @date 2024/3/7 9:38
+ * @date 2024/3/25 10:13
  */
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class PlatformAnimalEditRequest {
-
-    @ApiModelProperty(value = "宠物id")
-    @NotBlank(message = "id不能为空")
-    private String id;
+public class PlatformAnimalAddRequest {
 
     @ApiModelProperty(value = "宠物名称")
     private String name;
@@ -47,6 +43,22 @@ public class PlatformAnimalEditRequest {
 
     @ApiModelProperty(value = "体重")
     private BigDecimal weight;
+
+    @ApiModelProperty(value = "是否领养")
+    @NotNull(message = "领养状态不能为空")
+    private Integer isAdopt;
+
+    @ApiModelProperty(value = "是否遗失")
+    @NotNull(message = "遗失状态不能为空")
+    private Integer isLost;
+
+//    @ApiModelProperty(value = "宠物图片")
+//    @Size(max = 6, message = "最多只能上传6张图片")
+//    @NotEmpty(message = "宠物图片不能为空")
+//    private List<String> imgList;
+
+    @NotBlank(message = "宠物图片不能为空")
+    private String imgUrl;
 
     @ApiModelProperty(value = "描述信息")
     private String desc;

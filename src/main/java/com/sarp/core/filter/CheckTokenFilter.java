@@ -56,7 +56,7 @@ public class CheckTokenFilter extends OncePerRequestFilter {
                 || request.getRequestURI().contains("/webjars")
                 || request.getRequestURI().contains("/swagger-resources")
                 || request.getRequestURI().contains("/v2")
-                || request.getRequestURI().contains("/druid")) {
+                || request.getRequestURI().contains("/druid") || request.getRequestURI().contains("/image")) {
             ContextUtils.clear();
             chain.doFilter(request, response);
             return;

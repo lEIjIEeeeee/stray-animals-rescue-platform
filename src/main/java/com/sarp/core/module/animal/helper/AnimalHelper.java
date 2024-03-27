@@ -4,6 +4,8 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.sarp.core.exception.BizException;
 import com.sarp.core.module.animal.model.dto.PlatformAnimalDetailDTO;
+import com.sarp.core.module.animal.model.entity.Animal;
+import com.sarp.core.module.animal.model.response.AnimalResponse;
 import com.sarp.core.module.animal.model.response.PlatformAnimalResponse;
 import com.sarp.core.module.category.dao.CategoryMapper;
 import com.sarp.core.module.category.model.entity.Category;
@@ -30,7 +32,31 @@ public class AnimalHelper {
     private CategoryMapper categoryMapper;
     private MemberMapper memberMapper;
 
-    public void fillAnimalListData(List<PlatformAnimalResponse> dataList) {
+    public void fillAnimalListData(List<AnimalResponse> dataList) {
+        if (CollUtil.isEmpty(dataList)) {
+            return;
+        }
+        Set<String> categoryIds = dataList.stream()
+                                          .map(AnimalResponse::getCategoryId)
+                                          .collect(Collectors.toSet());
+
+        List<Category> categoryList = categoryMapper.selectBatchIds(categoryIds);
+
+        Map<String, Category> categoryMap = Collections.emptyMap();
+        if (CollUtil.isNotEmpty(categoryList)) {
+            categoryMap = categoryList.stream()
+                                      .collect(Collectors.toMap(Category::getId, category -> category));
+        }
+
+        for (AnimalResponse response : dataList) {
+            Category category = categoryMap.get(response.getCategoryId());
+            if (ObjectUtil.isNotNull(category)) {
+                response.setCategoryName(category.getName());
+            }
+        }
+    }
+
+    public void fillPlatformAnimalListData(List<PlatformAnimalResponse> dataList) {
         if (CollUtil.isEmpty(dataList)) {
             return;
         }

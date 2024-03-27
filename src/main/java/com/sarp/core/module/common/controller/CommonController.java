@@ -1,5 +1,14 @@
 package com.sarp.core.module.common.controller;
 
+import cn.hutool.core.io.FileTypeUtil;
+import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
+import cn.hutool.crypto.SecureUtil;
+import com.sarp.core.exception.BizException;
+import com.sarp.core.module.common.constant.CommonConstants;
+import com.sarp.core.module.common.enums.HttpResultCode;
+import com.sarp.core.module.common.enums.PicTypeEnum;
+import com.sarp.core.module.common.enums.UploadBizTypeEnum;
 import com.sarp.core.module.common.model.HttpResult;
 import com.sarp.core.module.common.model.dto.CategoryTreeDTO;
 import com.sarp.core.module.common.model.dto.PersonalInfoDTO;
@@ -12,10 +21,11 @@ import io.swagger.annotations.ApiOperation;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -29,6 +39,8 @@ import java.util.List;
 @RestController
 @RequestMapping("/commonModule/common")
 public class CommonController {
+
+    public static final String HOST = "http://127.0.0.1:8080/commonModule/common/uploadFile/";
 
     private CommonService commonService;
 
@@ -54,6 +66,32 @@ public class CommonController {
     @GetMapping("/getCounts")
     public HttpResult<UserBizCountsDTO> getCounts() {
         return HttpResult.success(commonService.getCounts());
+    }
+
+    @ApiOperation(value = "文件上传")
+    @PostMapping("/uploadFile")
+    public HttpResult<String> uploadFile(@RequestParam("file") MultipartFile file, @RequestParam UploadBizTypeEnum uploadBizType) throws IOException {
+        String fileType = FileTypeUtil.getType(file.getInputStream(), file.getOriginalFilename());
+        if (StrUtil.isBlank(fileType)) {
+            throw new BizException(HttpResultCode.BIZ_EXCEPTION, "图片类型异常");
+        }
+        PicTypeEnum picTypeEnum = PicTypeEnum.getEnumByCode(fileType);
+        if (ObjectUtil.isNull(picTypeEnum)) {
+            throw new BizException(HttpResultCode.BIZ_EXCEPTION, "图片类型异常");
+        }
+
+        try {
+            String fileNameMd5 = SecureUtil.md5(file.getOriginalFilename() + System.currentTimeMillis());
+            File rootFile = new File(CommonConstants.STATIC_LOCATION + uploadBizType.getCode());
+            if (!rootFile.exists()) {
+                rootFile.mkdirs();
+            }
+            File fileNew = new File(rootFile + StrUtil.SLASH + fileNameMd5 + picTypeEnum.getEnumSuffix());
+            file.transferTo(fileNew);
+            return HttpResult.success(CommonConstants.UPLOAD_URL_PATTERN + uploadBizType.getCode() + StrUtil.SLASH + fileNew.getName());
+        } catch (Exception e) {
+            throw new BizException(HttpResultCode.BIZ_EXCEPTION, "图片上传异常");
+        }
     }
 
 }

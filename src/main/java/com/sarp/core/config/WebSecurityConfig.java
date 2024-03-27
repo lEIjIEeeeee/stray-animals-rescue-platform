@@ -1,6 +1,7 @@
 package com.sarp.core.config;
 
 import com.sarp.core.filter.CheckTokenFilter;
+import com.sarp.core.module.common.constant.CommonConstants;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -10,6 +11,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.ArrayList;
@@ -67,7 +69,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter implements W
     @Override
     public void configure(WebSecurity web) throws Exception {
         web.ignoring()
-           .antMatchers("/css/**", "/js/**")
+           .antMatchers("/css/**", "/js/**", "/image/**")
            .and()
            .ignoring()
            .antMatchers()
@@ -79,5 +81,14 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter implements W
                    "/swagger-resources/**",
                    "/v2/api-docs/**",
                    "/druid/**");
+    }
+
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        registry.addResourceHandler("/image/avatar/**", "/image/animal/**", "/image/post/**")
+                .addResourceLocations(
+                        "file:" + CommonConstants.STATIC_LOCATION + "avatar/",
+                        "file:" + CommonConstants.STATIC_LOCATION + "animal/",
+                        "file:" + CommonConstants.STATIC_LOCATION + "post/");
     }
 }

@@ -1,33 +1,29 @@
-package com.sarp.core.module.animal.model.dto;
+package com.sarp.core.module.animal.model.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.sarp.core.module.common.model.response.BaseResponse;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
-import java.math.BigDecimal;
 import java.util.Date;
 
 /**
- * @date 2024/3/7 17:46
+ * @date 2024/3/25 15:35
  */
 
 @Data
+@EqualsAndHashCode(callSuper = true)
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
-public class PlatformAnimalDetailDTO {
+@SuperBuilder
+public class AnimalResponse extends BaseResponse {
 
-    @ApiModelProperty(value = "id")
-    private String id;
-
-    @ApiModelProperty(value = "宠物名称")
+    @ApiModelProperty(value = "名称")
     private String name;
-
-    @ApiModelProperty(value = "宠物编号")
-    private String animalNo;
 
     @ApiModelProperty(value = "动物类目id")
     private String categoryId;
@@ -42,22 +38,14 @@ public class PlatformAnimalDetailDTO {
     @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
     private Date birthday;
 
-    @ApiModelProperty(value = "体重")
-    private BigDecimal weight;
-
-    @ApiModelProperty(value = "宠物主人id")
-    private String ownerId;
-
-    @ApiModelProperty(value = "宠物主人名称")
-    private String ownerName;
-
     @ApiModelProperty(value = "是否领养")
     private Integer isAdopt;
 
-    @ApiModelProperty(value = "是否遗失")
+    @ApiModelProperty("是否遗失")
     private Integer isLost;
 
-    @ApiModelProperty(value = "描述信息")
-    private String desc;
+    @ApiModelProperty(value = "宠物图片")
+    private String picUrl;
+
 
 }

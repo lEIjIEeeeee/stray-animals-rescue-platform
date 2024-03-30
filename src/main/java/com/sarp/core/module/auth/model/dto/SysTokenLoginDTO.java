@@ -25,6 +25,9 @@ public class SysTokenLoginDTO {
     @ApiModelProperty(value = "账号")
     private String account;
 
+    @ApiModelProperty(value = "手机号")
+    private String phone;
+
     @ApiModelProperty(value = "用户类型")
     private String userType;
 

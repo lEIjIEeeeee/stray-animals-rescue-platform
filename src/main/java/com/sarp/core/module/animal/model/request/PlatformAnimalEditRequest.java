@@ -48,6 +48,9 @@ public class PlatformAnimalEditRequest {
     @ApiModelProperty(value = "体重")
     private BigDecimal weight;
 
+    @ApiModelProperty(value = "宠物图片")
+    private String picUrl;
+
     @ApiModelProperty(value = "描述信息")
     private String desc;
 

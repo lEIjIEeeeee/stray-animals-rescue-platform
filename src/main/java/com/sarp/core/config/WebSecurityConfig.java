@@ -85,10 +85,17 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter implements W
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler("/image/avatar/**", "/image/animal/**", "/image/post/**")
+        registry.addResourceHandler(
+                        "/image/avatar/**",
+                        "/image/animal/**",
+                        "/image/post/**",
+                        "/image/contribution/**",
+                        "/image/common/**")
                 .addResourceLocations(
                         "file:" + CommonConstants.STATIC_LOCATION + "avatar/",
                         "file:" + CommonConstants.STATIC_LOCATION + "animal/",
-                        "file:" + CommonConstants.STATIC_LOCATION + "post/");
+                        "file:" + CommonConstants.STATIC_LOCATION + "post/",
+                        "file:" + CommonConstants.STATIC_LOCATION + "contribution/",
+                        "file:" + CommonConstants.STATIC_LOCATION + "common/");
     }
 }

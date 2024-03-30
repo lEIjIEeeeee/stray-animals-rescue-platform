@@ -13,6 +13,7 @@ public enum UploadBizTypeEnum {
     AVATAR("avatar", "头像"),
     ANIMAL("animal", "宠物"),
     POST("post", "帖子"),
+    CONTRIBUTION("contribution", "捐助"),
     COMMON("common", "公共")
     ;
 

@@ -46,7 +46,7 @@ public class PlatformAnimalController {
     @ApiOperation(value = "查询宠物详情")
     @GetMapping("/get")
     public HttpResult<PlatformAnimalDetailDTO> get(@RequestParam @NotBlank String id) {
-        return HttpResult.success(animalService.get(id));
+        return HttpResult.success(animalService.getPlatformDetail(id));
     }
 
     @ApiOperation(value = "新增宠物信息")

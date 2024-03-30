@@ -9,9 +9,10 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 /**
- * @date 2024/3/7 17:46
+ * @date 2024/3/28 23:57
  */
 
 @Data
@@ -57,7 +58,13 @@ public class PlatformAnimalDetailDTO {
     @ApiModelProperty(value = "是否遗失")
     private Integer isLost;
 
+    @ApiModelProperty(value = "宠物图片")
+    private String picUrl;
+
     @ApiModelProperty(value = "描述信息")
     private String desc;
+
+    @ApiModelProperty(value = "领养记录")
+    private List<AnimalAdoptRecordDTO> adoptRecordList;
 
 }

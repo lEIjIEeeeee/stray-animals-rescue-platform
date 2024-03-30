@@ -18,6 +18,10 @@ public class MemberManager {
 
     private MemberMapper memberMapper;
 
+    public Member getById(String id) {
+        return memberMapper.selectById(id);
+    }
+
     public Member getByIdWithExp(String id) {
         Member member = memberMapper.selectById(id);
         if (ObjectUtil.isNull(member)) {

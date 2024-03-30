@@ -57,8 +57,9 @@ public class PlatformAnimalAddRequest {
 //    @NotEmpty(message = "宠物图片不能为空")
 //    private List<String> imgList;
 
+    @ApiModelProperty(value = "宠物图片")
     @NotBlank(message = "宠物图片不能为空")
-    private String imgUrl;
+    private String picUrl;
 
     @ApiModelProperty(value = "描述信息")
     private String desc;

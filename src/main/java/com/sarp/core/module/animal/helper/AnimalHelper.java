@@ -2,14 +2,19 @@ package com.sarp.core.module.animal.helper;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
-import com.sarp.core.exception.BizException;
-import com.sarp.core.module.animal.model.dto.PlatformAnimalDetailDTO;
-import com.sarp.core.module.animal.model.entity.Animal;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.sarp.core.module.animal.model.dto.AnimalAdoptRecordDTO;
+import com.sarp.core.module.animal.model.dto.AnimalBaseInfoDTO;
 import com.sarp.core.module.animal.model.response.AnimalResponse;
 import com.sarp.core.module.animal.model.response.PlatformAnimalResponse;
+import com.sarp.core.module.auth.manager.MemberManager;
 import com.sarp.core.module.category.dao.CategoryMapper;
+import com.sarp.core.module.category.manager.CategoryManager;
 import com.sarp.core.module.category.model.entity.Category;
-import com.sarp.core.module.common.enums.HttpResultCode;
+import com.sarp.core.module.common.enums.UploadBizTypeEnum;
+import com.sarp.core.module.media.dao.MediaMapper;
+import com.sarp.core.module.media.model.entity.Media;
+import com.sarp.core.module.media.service.MediaService;
 import com.sarp.core.module.user.dao.MemberMapper;
 import com.sarp.core.module.user.model.entity.Member;
 import lombok.AllArgsConstructor;
@@ -31,6 +36,12 @@ public class AnimalHelper {
 
     private CategoryMapper categoryMapper;
     private MemberMapper memberMapper;
+    private MediaMapper mediaMapper;
+
+    private CategoryManager categoryManager;
+    private MemberManager memberManager;
+
+    private MediaService mediaService;
 
     public void fillAnimalListData(List<AnimalResponse> dataList) {
         if (CollUtil.isEmpty(dataList)) {
@@ -52,6 +63,29 @@ public class AnimalHelper {
             Category category = categoryMap.get(response.getCategoryId());
             if (ObjectUtil.isNotNull(category)) {
                 response.setCategoryName(category.getName());
+            }
+        }
+    }
+
+    public void fillAnimalListMediaData(List<AnimalResponse> dataList) {
+        if (CollUtil.isEmpty(dataList)) {
+            return;
+        }
+        List<String> animalIds = dataList.stream()
+                                         .map(AnimalResponse::getId)
+                                         .collect(Collectors.toList());
+        List<Media> animalMediaList = mediaMapper.selectList(Wrappers.lambdaQuery(Media.class)
+                                                                     .in(Media::getServiceId, animalIds)
+                                                                     .eq(Media::getServiceType, UploadBizTypeEnum.ANIMAL.name()));
+        if (CollUtil.isEmpty(animalMediaList)) {
+            return;
+        }
+        Map<String, List<Media>> mediaMapByAnimal = animalMediaList.stream()
+                                                                   .collect(Collectors.groupingBy(Media::getServiceId));
+        for (AnimalResponse response : dataList) {
+            List<Media> mediaList = mediaMapByAnimal.get(response.getId());
+            if (CollUtil.isNotEmpty(mediaList)) {
+                response.setPicUrl(mediaList.get(0).getPicUrl());
             }
         }
     }
@@ -96,16 +130,27 @@ public class AnimalHelper {
         }
     }
 
-    public void fillAnimalDetailData(PlatformAnimalDetailDTO animalDetail) {
-        Category category = categoryMapper.selectById(animalDetail.getCategoryId());
-        if (ObjectUtil.isNull(category)) {
-            throw new BizException(HttpResultCode.DATA_NOT_EXISTED);
+    public void fillAnimalBaseInfo(AnimalBaseInfoDTO baseInfo) {
+        Category category = categoryManager.getById(baseInfo.getCategoryId());
+        if (ObjectUtil.isNotNull(category)) {
+            baseInfo.setCategoryName(category.getName());
         }
-        animalDetail.setCategoryName(category.getName());
 
-        Member owner = memberMapper.selectById(animalDetail.getOwnerId());
+        Member owner = memberManager.getById(baseInfo.getOwnerId());
         if (ObjectUtil.isNotNull(owner)) {
-            animalDetail.setOwnerName(owner.getNickName());
+            baseInfo.setOwnerName(owner.getNickName());
+            baseInfo.setOwnerPhone(owner.getPhone());
+        }
+
+        List<Media> animalMediaList = mediaService.getMediaList(baseInfo.getId(), UploadBizTypeEnum.ANIMAL);
+        if (CollUtil.isNotEmpty(animalMediaList)) {
+            baseInfo.setPicUrl(animalMediaList.get(0).getPicUrl());
+        }
+    }
+
+    public void fillAnimalDetailAdoptRecordData(List<AnimalAdoptRecordDTO> dataList) {
+        if (CollUtil.isEmpty(dataList)) {
+            return;
         }
     }
 

@@ -1,26 +1,38 @@
 package com.sarp.core.module.animal.service;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.sarp.core.context.ContextUtils;
 import com.sarp.core.exception.BizException;
+import com.sarp.core.module.adopt.dao.AdoptRecordMapper;
+import com.sarp.core.module.adopt.model.entity.AdoptRecord;
 import com.sarp.core.module.animal.dao.AnimalMapper;
 import com.sarp.core.module.animal.enums.AnimalSearchTypeEnum;
+import com.sarp.core.module.animal.enums.AuditStatusEnum;
 import com.sarp.core.module.animal.helper.AnimalHelper;
 import com.sarp.core.module.animal.manager.AnimalManager;
+import com.sarp.core.module.animal.model.dto.AnimalAdoptRecordDTO;
+import com.sarp.core.module.animal.model.dto.AnimalBaseInfoDTO;
+import com.sarp.core.module.animal.model.dto.AnimalDetailDTO;
 import com.sarp.core.module.animal.model.dto.PlatformAnimalDetailDTO;
 import com.sarp.core.module.animal.model.entity.Animal;
 import com.sarp.core.module.animal.model.request.*;
 import com.sarp.core.module.animal.util.AnimalNoGenerateUtils;
 import com.sarp.core.module.auth.model.dto.LoginUser;
-import com.sarp.core.module.auth.util.AuthNoGenerateUtils;
 import com.sarp.core.module.category.dao.CategoryMapper;
 import com.sarp.core.module.category.service.CategoryService;
 import com.sarp.core.module.common.enums.HttpResultCode;
+import com.sarp.core.module.common.enums.UploadBizTypeEnum;
 import com.sarp.core.module.common.enums.YesOrNoEnum;
+import com.sarp.core.module.contribution.dao.ContributionRecordMapper;
+import com.sarp.core.module.contribution.model.entity.ContributionRecord;
+import com.sarp.core.module.media.dao.MediaMapper;
+import com.sarp.core.module.media.model.entity.Media;
+import com.sarp.core.module.media.service.MediaService;
 import com.sarp.core.module.user.dao.MemberMapper;
 import com.sarp.core.module.user.enums.UserTypeEnum;
 import com.sarp.core.module.user.model.entity.Member;
@@ -31,7 +43,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -47,12 +61,16 @@ public class AnimalService {
     private AnimalMapper animalMapper;
     private CategoryMapper categoryMapper;
     private MemberMapper memberMapper;
+    private MediaMapper mediaMapper;
+    private AdoptRecordMapper adoptRecordMapper;
+    private ContributionRecordMapper contributionRecordMapper;
+
+    private CategoryService categoryService;
+    private MediaService mediaService;
 
     private AnimalHelper animalHelper;
 
     private AnimalManager animalManager;
-
-    private CategoryService categoryService;
 
     public Page<Animal> listPage(AnimalQueryRequest request) {
         LambdaQueryWrapper<Animal> queryWrapper = Wrappers.lambdaQuery(Animal.class)
@@ -112,11 +130,142 @@ public class AnimalService {
         return animalMapper.selectPage(PageUtils.createPage(request), queryWrapper);
     }
 
-    public PlatformAnimalDetailDTO get(String id) {
+    public AnimalDetailDTO getDetail(String id) {
         Animal animal = animalManager.getByIdWithExp(id);
-        PlatformAnimalDetailDTO animalDetail = JavaBeanUtils.map(animal, PlatformAnimalDetailDTO.class);
-        animalHelper.fillAnimalDetailData(animalDetail);
+        return getAnimalDetail(animal, AnimalDetailDTO.class);
+    }
+
+    public PlatformAnimalDetailDTO getPlatformDetail(String id) {
+        Animal animal = animalManager.getByIdWithExp(id);
+        PlatformAnimalDetailDTO animalDetail = getAnimalDetail(animal, PlatformAnimalDetailDTO.class);
+        List<AdoptRecord> adoptRecordList = adoptRecordMapper.selectList(Wrappers.lambdaQuery(AdoptRecord.class)
+                                                                                 .eq(AdoptRecord::getAnimalId, id)
+                                                                                 .eq(AdoptRecord::getStatus, AuditStatusEnum.AUDIT_PASS.getCode())
+                                                                                 .orderByDesc(AdoptRecord::getUpdateTime));
+        if (CollUtil.isNotEmpty(adoptRecordList)) {
+            List<AnimalAdoptRecordDTO> adoptRecordDtoList =
+                    adoptRecordList.stream()
+                                   .map(record -> AnimalAdoptRecordDTO.builder()
+                                                                      .id(record.getId())
+                                                                      .adoptUserId(record.getCreateId())
+                                                                      .contactPhone(record.getContactPhone())
+                                                                      .startDate(record.getStartDate())
+                                                                      .endDate(record.getEndDate())
+                                                                      .auditId(record.getAuditId())
+                                                                      .auditRemark(record.getAuditRemark())
+                                                                      .auditTime(record.getAuditTime())
+                                                                      .createTime(record.getCreateTime())
+                                                                      .build())
+                                   .collect(Collectors.toList());
+            fillAdoptRecordListData(adoptRecordDtoList);
+            animalDetail.setAdoptRecordList(adoptRecordDtoList);
+        }
         return animalDetail;
+    }
+
+    private void fillAdoptRecordListData(List<AnimalAdoptRecordDTO> dataList) {
+        if (CollUtil.isEmpty(dataList)) {
+            return;
+        }
+        Set<String> adoptUserIds = dataList.stream()
+                                           .map(AnimalAdoptRecordDTO::getAdoptUserId)
+                                           .collect(Collectors.toSet());
+        Set<String> auditIds = dataList.stream()
+                                       .map(AnimalAdoptRecordDTO::getAuditId)
+                                       .collect(Collectors.toSet());
+
+        List<Member> adoptUserList = memberMapper.selectBatchIds(adoptUserIds);
+        List<Member> auditorList = memberMapper.selectBatchIds(auditIds);
+
+        Map<String, Member> adoptUserMap = Collections.emptyMap();
+        if (CollUtil.isNotEmpty(adoptUserList)) {
+            adoptUserMap = adoptUserList.stream()
+                                        .collect(Collectors.toMap(Member::getId, member -> member));
+        }
+
+        Map<String, Member> auditorMap = Collections.emptyMap();
+        if (CollUtil.isNotEmpty(auditorList)) {
+            auditorMap = auditorList.stream()
+                                    .collect(Collectors.toMap(Member::getId, member -> member));
+        }
+
+        for (AnimalAdoptRecordDTO record : dataList) {
+            Member adoptUser = adoptUserMap.get(record.getAdoptUserId());
+            if (ObjectUtil.isNotNull(adoptUser)) {
+                record.setAdoptUserName(adoptUser.getNickName());
+                record.setAdoptUserAccount(adoptUser.getAccount());
+            }
+
+            Member auditor = auditorMap.get(record.getAuditId());
+            if (ObjectUtil.isNotNull(auditor)) {
+                record.setAuditorName(auditor.getNickName());
+                record.setAuditorPhone(auditor.getPhone());
+            }
+        }
+    }
+
+    private <T> T getAnimalDetail(Animal animal, Class<T> animalDetailClass) {
+        if (!animalDetailClass.equals(AnimalDetailDTO.class)
+                && !animalDetailClass.equals(PlatformAnimalDetailDTO.class)) {
+            throw new BizException(HttpResultCode.BIZ_EXCEPTION, "对象类型异常");
+        }
+        AnimalBaseInfoDTO baseInfo = JavaBeanUtils.map(animal, AnimalBaseInfoDTO.class);
+        animalHelper.fillAnimalBaseInfo(baseInfo);
+        return JavaBeanUtils.map(baseInfo, animalDetailClass);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void applyAdopt(AdoptApplyRequest request) {
+        String userId = ContextUtils.getCurrentUserId();
+        Animal animal = animalManager.getByIdWithExp(request.getAnimalId());
+        if (YesOrNoEnum.Y.getCode().equals(animal.getIsAdopt())) {
+            throw new BizException(HttpResultCode.BIZ_EXCEPTION, "当前宠物已被领养，无法领养");
+        }
+        if (YesOrNoEnum.Y.getCode().equals(animal.getIsLost())) {
+            throw new BizException(HttpResultCode.BIZ_EXCEPTION, "当前宠物已遗失，无法领养");
+        }
+        if (ObjectUtil.equal(animal.getOwnerId(), userId)) {
+            throw new BizException(HttpResultCode.BIZ_EXCEPTION, "您已领养当前宠物，无需再次领养");
+        }
+        AdoptRecord waitAuditRecord = adoptRecordMapper.selectOne(Wrappers.lambdaQuery(AdoptRecord.class)
+                                                                          .eq(AdoptRecord::getAnimalId, request.getAnimalId())
+                                                                          .eq(AdoptRecord::getCreateId, userId)
+                                                                          .eq(AdoptRecord::getStatus, AuditStatusEnum.AUDIT_WAIT.getCode()));
+        if (ObjectUtil.isNotNull(waitAuditRecord)) {
+            throw new BizException(HttpResultCode.BIZ_EXCEPTION, "您已提交当前宠物的领养申请，无需重复操作");
+        }
+
+        AdoptRecord adoptRecord = AdoptRecord.builder()
+                                             .animalId(animal.getId())
+                                             .contactPhone(request.getContactPhone())
+                                             .status(AuditStatusEnum.AUDIT_WAIT.getCode())
+                                             .remark(request.getRemark())
+                                             .build();
+        adoptRecordMapper.insert(adoptRecord);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void applyContribution(ContributionApplyRequest request) {
+        Animal animal = animalManager.getByIdWithExp(request.getAnimalId());
+        if (YesOrNoEnum.Y.getCode().equals(animal.getIsLost())) {
+            throw new BizException(HttpResultCode.BIZ_EXCEPTION, "当前宠物已遗失，无法捐助");
+        }
+        if (ObjectUtil.equal(animal.getOwnerId(), ContextUtils.getCurrentUserId())) {
+            throw new BizException(HttpResultCode.BIZ_EXCEPTION, "您已领养当前宠物，无需捐助");
+        }
+
+        ContributionRecord contributionRecord = JavaBeanUtils.map(request, ContributionRecord.class);
+        contributionRecord.setStatus(AuditStatusEnum.AUDIT_WAIT.getCode())
+                          .setItemType(request.getItemType().getCode());
+        contributionRecordMapper.insert(contributionRecord);
+
+        Media contributionMedia = Media.builder()
+                                       .serviceId(contributionRecord.getId())
+                                       .serviceType(UploadBizTypeEnum.CONTRIBUTION.name())
+                                       .picUrl(request.getItemPic())
+                                       .sort(1)
+                                       .build();
+        mediaMapper.insert(contributionMedia);
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -125,6 +274,7 @@ public class AnimalService {
         animal.setAnimalNo(AnimalNoGenerateUtils.generateAnimalNo())
               .setGender(request.getGender().name());
         animalMapper.insert(animal);
+        insertOrUpdateAnimalMediaInfo(animal, CollUtil.newArrayList(request.getPicUrl()));
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -141,6 +291,37 @@ public class AnimalService {
             animal.setGender(request.getGender().name());
         }
         animalMapper.updateById(animal);
+        insertOrUpdateAnimalMediaInfo(animal, CollUtil.newArrayList(request.getPicUrl()));
+    }
+
+    private void insertOrUpdateAnimalMediaInfo(Animal animal, List<String> mediaList) {
+        if (CollUtil.isEmpty(mediaList)) {
+            return;
+        }
+        List<Media> animalMediaList = mediaService.getMediaList(animal.getId(), UploadBizTypeEnum.ANIMAL);
+        if (CollUtil.isNotEmpty(animalMediaList)) {
+            List<String> mediaIds = animalMediaList.stream()
+                                                   .map(Media::getId)
+                                                   .collect(Collectors.toList());
+            mediaMapper.deleteBatchWithFill(Media.builder()
+                                                 .build(), Wrappers.lambdaQuery(Media.class)
+                                                                   .in(Media::getId, mediaIds));
+        }
+
+        List<Media> mediaListNew = CollUtil.newArrayList();
+        mediaList.forEach(media -> {
+            mediaListNew.add( Media.builder()
+                                   .serviceId(animal.getId())
+                                   .serviceType(UploadBizTypeEnum.ANIMAL.name())
+                                   .picUrl(media)
+                                   .sort(mediaList.indexOf(media) + 1)
+                                   .build());
+        });
+
+        if (CollUtil.isEmpty(mediaListNew)) {
+            return;
+        }
+        mediaMapper.insertBatchSomeColumn(mediaListNew);
     }
 
     @Transactional(rollbackFor = Exception.class)

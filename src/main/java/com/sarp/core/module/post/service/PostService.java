@@ -9,17 +9,13 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.sarp.core.context.ContextUtils;
 import com.sarp.core.exception.BizException;
-import com.sarp.core.module.animal.dao.AnimalMapper;
-import com.sarp.core.module.animal.manager.AnimalManager;
-import com.sarp.core.module.animal.model.entity.Animal;
-import com.sarp.core.module.animal.util.AnimalNoGenerateUtils;
-import com.sarp.core.module.auth.model.dto.LoginUser;
 import com.sarp.core.module.category.service.CategoryService;
 import com.sarp.core.module.common.enums.AuditResultEnum;
-import com.sarp.core.module.common.enums.BizTypeEnum;
 import com.sarp.core.module.common.enums.HttpResultCode;
-import com.sarp.core.module.common.enums.YesOrNoEnum;
+import com.sarp.core.module.common.enums.UploadBizTypeEnum;
 import com.sarp.core.module.common.model.entity.BaseDO;
+import com.sarp.core.module.media.dao.MediaMapper;
+import com.sarp.core.module.media.model.entity.Media;
 import com.sarp.core.module.post.dao.PostMapper;
 import com.sarp.core.module.post.enums.PostSearchTypeEnum;
 import com.sarp.core.module.post.enums.PostStatusEnum;
@@ -27,7 +23,6 @@ import com.sarp.core.module.post.model.dto.PostCloseReasonDTO;
 import com.sarp.core.module.post.model.entity.Post;
 import com.sarp.core.module.post.model.request.*;
 import com.sarp.core.module.user.dao.MemberMapper;
-import com.sarp.core.module.user.enums.UserTypeEnum;
 import com.sarp.core.module.user.model.entity.Member;
 import com.sarp.core.util.JavaBeanUtils;
 import com.sarp.core.util.PageUtils;
@@ -50,63 +45,38 @@ import java.util.stream.Collectors;
 public class PostService {
 
     private PostMapper postMapper;
-    private AnimalMapper animalMapper;
     private MemberMapper memberMapper;
-
-    private AnimalManager animalManager;
+    private MediaMapper mediaMapper;
 
     private CategoryService categoryService;
 
     @Transactional(rollbackFor = Exception.class)
     public void submitPost(SubmitPostRequest request) {
-        LoginUser user = ContextUtils.getCurrentUser();
-        if (UserTypeEnum.NORMAL_USER.name().equals(user.getUserType())) {
-            checkAnimalOwner(request, user.getId());
-        }
-        if (StrUtil.isNotBlank(request.getAnimalId())) {
-            checkAnimalStatus(request);
-        }
-
         Post post = JavaBeanUtils.map(request, Post.class, BaseDO.ID);
         post.setBizType(request.getBizType().getCode())
             .setStatus(PostStatusEnum.AUDIT_WAIT.getCode());
         postMapper.insert(post);
+
+        Media media = Media.builder()
+                           .serviceId(post.getId())
+                           .serviceType(UploadBizTypeEnum.POST.name())
+                           .picUrl(request.getPicUrl())
+                           .sort(1)
+                           .build();
+        mediaMapper.insert(media);
     }
 
     @Transactional(rollbackFor = Exception.class)
     public void resubmitPost(SubmitPostRequest request) {
-        LoginUser user = ContextUtils.getCurrentUser();
-        if (UserTypeEnum.NORMAL_USER.name().equals(user.getUserType())) {
-            checkAnimalOwner(request, user.getId());
-        }
-        if (StrUtil.isNotBlank(request.getAnimalId())) {
-            checkAnimalStatus(request);
-        }
+        String userId = ContextUtils.getCurrentUserId();
 
         Post post = getByIdWithExp(request.getId());
-        checkPostInfo(post, user.getId());
+        checkPostInfo(post, userId);
 
         JavaBeanUtils.map(request, post);
         post.setBizType(request.getBizType().getCode())
             .setStatus(PostStatusEnum.AUDIT_WAIT.getCode());
         postMapper.updateById(post);
-    }
-
-    private void checkAnimalOwner(SubmitPostRequest request, String userId) {
-        if (StrUtil.isNotBlank(request.getAnimalId())) {
-            Animal animal = animalManager.getByIdWithExp(request.getAnimalId());
-            if (ObjectUtil.notEqual(animal.getOwnerId(), userId)) {
-                throw new BizException(HttpResultCode.BIZ_EXCEPTION, "当前选择不是你名下的宠物，没有操作权限");
-            }
-        }
-    }
-
-    private void checkAnimalStatus(SubmitPostRequest request) {
-        Animal animal = animalManager.getByIdWithExp(request.getAnimalId());
-        if (YesOrNoEnum.Y.getCode().equals(animal.getIsLost())
-                && BizTypeEnum.ADOPT_BIZ.equals(request.getBizType())) {
-            throw new BizException(HttpResultCode.BIZ_EXCEPTION, "当前宠物已遗失，无法发起领养帖");
-        }
     }
 
     private void checkPostInfo(Post post, String userId) {
@@ -168,9 +138,6 @@ public class PostService {
                                                  .collect(Collectors.toList());
                 queryWrapper.in(Post::getCreateId, userIds);
             }
-            if (PostSearchTypeEnum.ANIMAL_NAME == request.getSearchType()) {
-                queryWrapper.like(Post::getAnimalName, request.getSearchContent());
-            }
         }
 
         if (request.getBizType() != null) {
@@ -187,14 +154,6 @@ public class PostService {
         return true;
     }
 
-    public PostCloseReasonDTO getCloseReason(String id) {
-        Post post = getByIdWithExp(id);
-        return PostCloseReasonDTO.builder()
-                                 .id(id)
-                                 .closeReason(post.getCloseReason())
-                                 .build();
-    }
-
     @Transactional(rollbackFor = Exception.class)
     public void audit(PostAuditRequest request) {
         Post post = getByIdWithExp(request.getId());
@@ -204,7 +163,6 @@ public class PostService {
 
         if (AuditResultEnum.PASS.equals(request.getAuditResult())) {
             post.setStatus(PostStatusEnum.AUDIT_PASS.getCode());
-            updateOrInsertAnimalRecord(post);
         } else {
             if (StrUtil.isBlank(request.getAuditRemark())) {
                 throw new BizException(HttpResultCode.BIZ_EXCEPTION, "审核拒绝时备注不能为空");
@@ -218,46 +176,6 @@ public class PostService {
         postMapper.updateById(post);
     }
 
-    private void updateOrInsertAnimalRecord(Post post) {
-        if (StrUtil.isNotBlank(post.getAnimalId())) {
-            Animal animal = animalManager.getByIdWithExp(post.getAnimalId());
-            if (ObjectUtil.isNull(animal)) {
-                throw new BizException(HttpResultCode.DATA_NOT_EXISTED);
-            }
-
-            if (YesOrNoEnum.Y.getCode().equals(animal.getIsLost())
-                    && BizTypeEnum.ADOPT_BIZ.getCode().equals(post.getBizType())) {
-                throw new BizException(HttpResultCode.BIZ_EXCEPTION, "当前宠物已遗失，领养帖无法进行审核通过操作");
-            }
-
-            updateAnimalStatus(post, animal);
-            animalMapper.updateById(animal);
-        } else {
-            Animal animal = Animal.builder()
-                                  .animalNo(AnimalNoGenerateUtils.generateAnimalNo())
-                                  .categoryId(post.getCategoryId())
-                                  .ownerId(post.getCreateId())
-                                  .name(post.getAnimalName())
-                                  .gender(post.getAnimalGender())
-                                  .isAdopt(YesOrNoEnum.N.getCode())
-                                  .isLost(YesOrNoEnum.N.getCode())
-                                  .desc(post.getAnimalDesc())
-                                  .build();
-            updateAnimalStatus(post, animal);
-            animalMapper.insert(animal);
-        }
-    }
-
-    private void updateAnimalStatus(Post post, Animal animal) {
-        if (BizTypeEnum.ADOPT_BIZ.getCode().equals(post.getBizType())) {
-            animal.setIsAdopt(YesOrNoEnum.N.getCode());
-        }
-
-        if (BizTypeEnum.LOST_BIZ.getCode().equals(post.getBizType())){
-            animal.setIsLost(YesOrNoEnum.Y.getCode());
-        }
-    }
-
     @Transactional(rollbackFor = Exception.class)
     public void close(PostCloseRequest request) {
         Post post = getByIdWithExp(request.getId());
@@ -267,6 +185,13 @@ public class PostService {
         post.setStatus(PostStatusEnum.CLOSED.getCode())
             .setCloseReason(request.getCloseReason());
         postMapper.updateById(post);
+    }
+
+    public PostCloseReasonDTO getCloseReason(String id) {
+        Post post = getByIdWithExp(id);
+        return PostCloseReasonDTO.builder()
+                                 .closeReason(post.getCloseReason())
+                                 .build();
     }
 
     @Transactional(rollbackFor = Exception.class)

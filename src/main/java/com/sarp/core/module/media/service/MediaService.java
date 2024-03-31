@@ -9,8 +9,8 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @date 2024/3/27 21:09
@@ -26,10 +26,29 @@ public class MediaService {
     public List<Media> getMediaList(String serviceId, UploadBizTypeEnum uploadBizType) {
         List<Media> mediaList = mediaMapper.selectList(Wrappers.lambdaQuery(Media.class)
                                                                .eq(Media::getServiceId, serviceId)
-                                                               .eq(Media::getServiceType, uploadBizType.name()));
+                                                               .eq(Media::getServiceType, uploadBizType.name())
+                                                               .orderByAsc(Media::getSort));
         if (CollUtil.isEmpty(mediaList)) {
             return Collections.emptyList();
         }
         return mediaList;
+    }
+
+    public Map<String, List<Media>> getMediaMap(Collection<String> serviceIds, UploadBizTypeEnum uploadBizType) {
+        if (CollUtil.isEmpty(serviceIds)) {
+            return Collections.emptyMap();
+        }
+        List<Media> mediaList = mediaMapper.selectList(Wrappers.lambdaQuery(Media.class)
+                                                               .in(Media::getServiceId, serviceIds)
+                                                               .eq(Media::getServiceType, uploadBizType.name()));
+        if (CollUtil.isEmpty(mediaList)) {
+            return Collections.emptyMap();
+        }
+        return mediaList.stream()
+                        .collect(Collectors.groupingBy(Media::getServiceId, Collectors.collectingAndThen(Collectors.toList(),
+                                list -> {
+                                    list.sort(Comparator.comparing(Media::getSort));
+                                    return list;
+                                })));
     }
 }

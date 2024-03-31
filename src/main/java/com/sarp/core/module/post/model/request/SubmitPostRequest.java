@@ -32,16 +32,20 @@ public class SubmitPostRequest {
     @NotBlank(message = "动物类目id不能为空", groups = { SubmitPostRequest.Add.class, SubmitPostRequest.Edit.class })
     private String categoryId;
 
-    @ApiModelProperty(value = "宠物id")
-    private String animalId;
-
-    @ApiModelProperty(value = "宠物名称")
-    @NotBlank(message = "宠物名称不能为空", groups = { SubmitPostRequest.Add.class, SubmitPostRequest.Edit.class })
-    private String animalName;
+//    @ApiModelProperty(value = "宠物id")
+//    private String animalId;
+//
+//    @ApiModelProperty(value = "宠物名称")
+//    @NotBlank(message = "宠物名称不能为空", groups = { SubmitPostRequest.Add.class, SubmitPostRequest.Edit.class })
+//    private String animalName;
 
     @ApiModelProperty(value = "业务类型")
     @NotNull(message = "业务类型不能为空", groups = { SubmitPostRequest.Add.class, SubmitPostRequest.Edit.class })
     private BizTypeEnum bizType;
+
+    @ApiModelProperty(value = "图片url")
+    @NotBlank(message = "图片不能为空")
+    private String picUrl;
 
     @ApiModelProperty(value = "摘要")
     @NotBlank(message = "摘要不能为空", groups = { SubmitPostRequest.Add.class, SubmitPostRequest.Edit.class })

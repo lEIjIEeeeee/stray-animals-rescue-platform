@@ -18,13 +18,17 @@ import com.sarp.core.module.category.manager.CategoryManager;
 import com.sarp.core.module.category.model.entity.Category;
 import com.sarp.core.module.common.enums.AuditResultEnum;
 import com.sarp.core.module.common.enums.HttpResultCode;
+import com.sarp.core.module.common.enums.UploadBizTypeEnum;
 import com.sarp.core.module.contribution.dao.ContributionRecordMapper;
 import com.sarp.core.module.contribution.enums.ContributionSearchTypeEnum;
 import com.sarp.core.module.contribution.manager.ContributionManager;
 import com.sarp.core.module.contribution.model.dto.ContributionAuditDetailDTO;
+import com.sarp.core.module.contribution.model.dto.ContributionRecordDetailDTO;
 import com.sarp.core.module.contribution.model.entity.ContributionRecord;
 import com.sarp.core.module.contribution.model.request.ContributionAuditRequest;
 import com.sarp.core.module.contribution.model.request.PlatformContributionQueryRequest;
+import com.sarp.core.module.media.model.entity.Media;
+import com.sarp.core.module.media.service.MediaService;
 import com.sarp.core.module.user.dao.MemberMapper;
 import com.sarp.core.module.user.model.entity.Member;
 import com.sarp.core.util.JavaBeanUtils;
@@ -54,6 +58,8 @@ public class ContributionService {
     private AnimalManager animalManager;
     private CategoryManager categoryManager;
     private MemberManager memberManager;
+
+    private MediaService mediaService;
 
     public Page<ContributionRecord> platformListPage(PlatformContributionQueryRequest request) {
         LambdaQueryWrapper<ContributionRecord> queryWrapper = Wrappers.lambdaQuery(ContributionRecord.class)
@@ -111,6 +117,40 @@ public class ContributionService {
             }
         }
         return contributionRecordMapper.selectPage(PageUtils.createPage(request), queryWrapper);
+    }
+
+    public ContributionRecordDetailDTO getRecordDetail(String id) {
+        ContributionRecord contributionRecord = contributionManager.getByIdWithExp(id);
+        ContributionRecordDetailDTO recordDetail = JavaBeanUtils.map(contributionRecord, ContributionRecordDetailDTO.class);
+        recordDetail.setApplyTime(contributionRecord.getCreateTime());
+
+        Animal animal = animalManager.getByIdWithExp(contributionRecord.getAnimalId());
+        recordDetail.setAnimalName(animal.getName());
+        recordDetail.setAnimalNo(animal.getAnimalNo());
+
+        Category category = categoryManager.getByIdWithExp(animal.getCategoryId());
+        recordDetail.setCategoryName(category.getName());
+
+        Member applyUser = memberManager.getByIdWithExp(contributionRecord.getCreateId());
+        recordDetail.setApplyUserName(applyUser.getNickName());
+        recordDetail.setApplyUserAccount(applyUser.getAccount());
+
+        if (StrUtil.isNotBlank(animal.getOwnerId())) {
+            Member owner = memberManager.getByIdWithExp(animal.getOwnerId());
+            recordDetail.setOwnerName(owner.getNickName());
+            recordDetail.setOwnerPhone(owner.getPhone());
+        }
+
+        if (StrUtil.isNotBlank(contributionRecord.getAuditId())) {
+            Member auditor = memberManager.getByIdWithExp(contributionRecord.getAuditId());
+            recordDetail.setAuditUserName(auditor.getNickName());
+        }
+
+        List<Media> animalMediaList = mediaService.getMediaList(contributionRecord.getAnimalId(), UploadBizTypeEnum.ANIMAL);
+        if (CollUtil.isNotEmpty(animalMediaList)) {
+            recordDetail.setPicUrl(animalMediaList.get(0).getPicUrl());
+        }
+        return recordDetail;
     }
 
     public ContributionAuditDetailDTO getAuditDetail(String id) {

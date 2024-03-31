@@ -5,9 +5,8 @@ import com.sarp.core.module.post.model.entity.Post;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
- * @date 2024/1/31 10:22
- *
-*/
+ * @date 2024/3/31 16:00
+ */
 
 @Mapper
 public interface PostMapper extends MyBaseMapper<Post> {

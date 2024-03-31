@@ -10,40 +10,41 @@ import lombok.NoArgsConstructor;
 import java.util.Date;
 
 /**
- * @date 2024/3/29 11:21
+ * @date 2024/3/31 11:32
  */
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class AnimalAdoptRecordDTO {
+public class AnimalContributionRecordDTO {
 
     @ApiModelProperty(value = "记录id")
     private String id;
 
-    @ApiModelProperty(value = "领养人id")
-    private String adoptUserId;
+    @ApiModelProperty(value = "捐助人id")
+    private String applyUserId;
 
-    @ApiModelProperty(value = "领养人名称")
-    private String adoptUserName;
+    @ApiModelProperty(value = "捐助人名称")
+    private String applyUserName;
 
-    @ApiModelProperty(value = "领养人登录帐号")
-    private String adoptUserAccount;
+    @ApiModelProperty(value = "捐助人账号")
+    private String applyUserAccount;
 
-    @ApiModelProperty(value = "领养人联系电话")
+    @ApiModelProperty(value = "联系电话")
     private String contactPhone;
 
-    @ApiModelProperty(value = "领养备注")
+    @ApiModelProperty(value = "捐助类型")
+    private Integer itemType;
+
+    @ApiModelProperty(value = "捐助物名称")
+    private String itemName;
+
+    @ApiModelProperty(value = "捐助物图片")
+    private String itemPic;
+
+    @ApiModelProperty(value = "捐助备注")
     private String remark;
-
-    @ApiModelProperty(value = "领养开始日期")
-    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
-    private Date startDate;
-
-    @ApiModelProperty(value = "领养结束日期")
-    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
-    private Date endDate;
 
     @ApiModelProperty(value = "审核人id")
     private String auditId;

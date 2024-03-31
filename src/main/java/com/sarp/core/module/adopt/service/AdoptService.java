@@ -70,7 +70,7 @@ public class AdoptService {
                                                                .le(request.getApplyEndTime() != null, AdoptRecord::getCreateTime, request.getApplyEndTime())
                                                                .orderByDesc(AdoptRecord::getUpdateTime);
         if (request.getStatus() != null) {
-            queryWrapper.eq(AdoptRecord::getStatus, request.getStatus());
+            queryWrapper.eq(AdoptRecord::getStatus, request.getStatus().getCode());
         }
 
         if (request.getSearchType() != null

@@ -142,7 +142,8 @@ public class CommonService {
                                                         .and(StrUtil.isNotBlank(request.getSearchContent()), wrapper -> {
                                                             wrapper.or(wp -> wp.like(Post::getTitle, request.getSearchContent()))
                                                                    .or(wp -> wp.like(Post::getPostAbstract, request.getSearchContent()))
-                                                                   .or(wp -> wp.like(Post::getAnimalName, request.getSearchContent()));
+//                                                                   .or(wp -> wp.like(Post::getAnimalName, request.getSearchContent()))
+                                                            ;
                                                         }).orderByDesc(Post::getUpdateTime);
         return postMapper.selectPage(PageUtils.createPage(request), queryWrapper);
     }

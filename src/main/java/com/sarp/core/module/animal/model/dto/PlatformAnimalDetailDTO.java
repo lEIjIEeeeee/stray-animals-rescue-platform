@@ -67,4 +67,7 @@ public class PlatformAnimalDetailDTO {
     @ApiModelProperty(value = "领养记录")
     private List<AnimalAdoptRecordDTO> adoptRecordList;
 
+    @ApiModelProperty(value = "捐助记录")
+    private List<AnimalContributionRecordDTO> contributionRecordList;
+
 }

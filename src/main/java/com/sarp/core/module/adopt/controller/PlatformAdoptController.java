@@ -48,7 +48,7 @@ public class PlatformAdoptController {
         return HttpResult.success(responsePageVO);
     }
 
-    @ApiOperation(value = "查询领养记录审核详情")
+    @ApiOperation(value = "查询领养记录详情")
     @GetMapping("/getRecordDetail")
     public HttpResult<AdoptRecordDetailDTO> getRecordDetail(@RequestParam @NotBlank String id) {
         return HttpResult.success(adoptService.getRecordDetail(id));

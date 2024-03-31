@@ -6,6 +6,7 @@ import com.sarp.core.module.common.model.request.BaseQueryRequest;
 import com.sarp.core.module.common.model.vo.PageVO;
 import com.sarp.core.module.contribution.helper.ContributionHelper;
 import com.sarp.core.module.contribution.model.dto.ContributionAuditDetailDTO;
+import com.sarp.core.module.contribution.model.dto.ContributionRecordDetailDTO;
 import com.sarp.core.module.contribution.model.request.ContributionAuditRequest;
 import com.sarp.core.module.contribution.model.request.PlatformContributionQueryRequest;
 import com.sarp.core.module.contribution.model.response.PlatformContributionResponse;
@@ -43,6 +44,12 @@ public class PlatformContributionController {
                 .convertPageToPageVo(contributionService.platformListPage(request), PlatformContributionResponse.class);
         contributionHelper.fillPlatformContributionListData(responsePageVO.getDataList());
         return HttpResult.success(responsePageVO);
+    }
+
+    @ApiOperation(value = "查询捐助记录详情")
+    @GetMapping("/getRecordDetail")
+    public HttpResult<ContributionRecordDetailDTO> getRecordDetail(@RequestParam @NotBlank String id) {
+        return HttpResult.success(contributionService.getRecordDetail(id));
     }
 
     @ApiOperation(value = "审核时查询被捐助宠物、捐助人信息")

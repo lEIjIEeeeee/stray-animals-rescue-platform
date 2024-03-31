@@ -39,17 +39,32 @@ public class PlatformPostController {
 
     private PostHelper postHelper;
 
-    @ApiOperation(value = "后台-分页查询帖子列表")
+    @ApiOperation(value = "分页查询帖子列表")
     @GetMapping("/listPage")
     public HttpResult<PageVO<PlatformPostResponse>> listPage(@Validated(BaseQueryRequest.ListPage.class)
                                                                      PlatformPostQueryRequest request) {
         Page<Post> postPage = postService.listPagePlatform(request);
         PageVO<PlatformPostResponse> postResponsePageVO = CommonConvert.convertPageToPageVo(postPage, PlatformPostResponse.class);
         postHelper.fillPostListData(postResponsePageVO.getDataList());
+        postHelper.fillPlatformListAuditorData(postResponsePageVO.getDataList());
         return HttpResult.success(postResponsePageVO);
     }
 
     //TODO 查看帖子详情
+
+    @ApiOperation(value = "审核帖子")
+    @PostMapping("/audit")
+    public HttpResult<Void> audit(@RequestBody @Validated PostAuditRequest request) {
+        postService.audit(request);
+        return HttpResult.success();
+    }
+
+    @ApiOperation(value = "关闭帖子")
+    @PostMapping("/close")
+    public HttpResult<Void> close(@RequestBody @Validated PostCloseRequest request) {
+        postService.close(request);
+        return HttpResult.success();
+    }
 
     @ApiOperation(value = "查看帖子关闭原因")
     @GetMapping("/getCloseReason")
@@ -57,21 +72,7 @@ public class PlatformPostController {
         return HttpResult.success(postService.getCloseReason(id));
     }
 
-    @ApiOperation(value = "后台-审核帖子")
-    @PostMapping("/audit")
-    public HttpResult<Void> audit(@RequestBody @Validated PostAuditRequest request) {
-        postService.audit(request);
-        return HttpResult.success();
-    }
-
-    @ApiOperation(value = "后台-关闭帖子")
-    @PostMapping("/close")
-    public HttpResult<Void> close(@RequestBody @Validated PostCloseRequest request) {
-        postService.close(request);
-        return HttpResult.success();
-    }
-
-    @ApiOperation(value = "后台-删除帖子")
+    @ApiOperation(value = "删除帖子")
     @PostMapping("/delete")
     public HttpResult<Void> delete(@RequestBody @Validated PostDeleteRequest request) {
         postService.delete(request);

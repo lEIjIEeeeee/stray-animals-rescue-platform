@@ -15,14 +15,12 @@ import com.sarp.core.module.animal.enums.AnimalSearchTypeEnum;
 import com.sarp.core.module.animal.enums.AuditStatusEnum;
 import com.sarp.core.module.animal.helper.AnimalHelper;
 import com.sarp.core.module.animal.manager.AnimalManager;
-import com.sarp.core.module.animal.model.dto.AnimalAdoptRecordDTO;
-import com.sarp.core.module.animal.model.dto.AnimalBaseInfoDTO;
-import com.sarp.core.module.animal.model.dto.AnimalDetailDTO;
-import com.sarp.core.module.animal.model.dto.PlatformAnimalDetailDTO;
+import com.sarp.core.module.animal.model.dto.*;
 import com.sarp.core.module.animal.model.entity.Animal;
 import com.sarp.core.module.animal.model.request.*;
 import com.sarp.core.module.animal.util.AnimalNoGenerateUtils;
 import com.sarp.core.module.auth.model.dto.LoginUser;
+import com.sarp.core.module.auth.service.MemberService;
 import com.sarp.core.module.category.dao.CategoryMapper;
 import com.sarp.core.module.category.service.CategoryService;
 import com.sarp.core.module.common.enums.HttpResultCode;
@@ -43,10 +41,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -67,6 +62,7 @@ public class AnimalService {
 
     private CategoryService categoryService;
     private MediaService mediaService;
+    private MemberService memberService;
 
     private AnimalHelper animalHelper;
 
@@ -138,27 +134,38 @@ public class AnimalService {
     public PlatformAnimalDetailDTO getPlatformDetail(String id) {
         Animal animal = animalManager.getByIdWithExp(id);
         PlatformAnimalDetailDTO animalDetail = getAnimalDetail(animal, PlatformAnimalDetailDTO.class);
+
         List<AdoptRecord> adoptRecordList = adoptRecordMapper.selectList(Wrappers.lambdaQuery(AdoptRecord.class)
                                                                                  .eq(AdoptRecord::getAnimalId, id)
                                                                                  .eq(AdoptRecord::getStatus, AuditStatusEnum.AUDIT_PASS.getCode())
-                                                                                 .orderByDesc(AdoptRecord::getUpdateTime));
+                                                                                 .orderByDesc(AdoptRecord::getAuditTime));
         if (CollUtil.isNotEmpty(adoptRecordList)) {
             List<AnimalAdoptRecordDTO> adoptRecordDtoList =
                     adoptRecordList.stream()
-                                   .map(record -> AnimalAdoptRecordDTO.builder()
-                                                                      .id(record.getId())
-                                                                      .adoptUserId(record.getCreateId())
-                                                                      .contactPhone(record.getContactPhone())
-                                                                      .startDate(record.getStartDate())
-                                                                      .endDate(record.getEndDate())
-                                                                      .auditId(record.getAuditId())
-                                                                      .auditRemark(record.getAuditRemark())
-                                                                      .auditTime(record.getAuditTime())
-                                                                      .createTime(record.getCreateTime())
-                                                                      .build())
+                                   .map(record -> {
+                                       AnimalAdoptRecordDTO recordDTO = JavaBeanUtils.map(record, AnimalAdoptRecordDTO.class);
+                                       recordDTO.setAdoptUserId(record.getCreateId());
+                                       return recordDTO;
+                                   })
                                    .collect(Collectors.toList());
             fillAdoptRecordListData(adoptRecordDtoList);
             animalDetail.setAdoptRecordList(adoptRecordDtoList);
+        }
+
+        List<ContributionRecord> contributionRecordList = contributionRecordMapper.selectList(Wrappers.lambdaQuery(ContributionRecord.class)
+                                                                                                      .eq(ContributionRecord::getAnimalId, id)
+                                                                                                      .eq(ContributionRecord::getStatus, AuditStatusEnum.AUDIT_PASS.getCode())
+                                                                                                      .orderByDesc(ContributionRecord::getAuditTime));
+        if (CollUtil.isNotEmpty(contributionRecordList)) {
+            List<AnimalContributionRecordDTO> contributionRecordDtoList = contributionRecordList.stream()
+                                                                                                .map(record -> {
+                                                                                                    AnimalContributionRecordDTO recordDTO = JavaBeanUtils.map(record, AnimalContributionRecordDTO.class);
+                                                                                                    recordDTO.setApplyUserId(record.getCreateId());
+                                                                                                    return recordDTO;
+                                                                                                })
+                                                                                                .collect(Collectors.toList());
+            fillContributionRecordListData(contributionRecordDtoList);
+            animalDetail.setContributionRecordList(contributionRecordDtoList);
         }
         return animalDetail;
     }
@@ -167,36 +174,59 @@ public class AnimalService {
         if (CollUtil.isEmpty(dataList)) {
             return;
         }
-        Set<String> adoptUserIds = dataList.stream()
-                                           .map(AnimalAdoptRecordDTO::getAdoptUserId)
-                                           .collect(Collectors.toSet());
-        Set<String> auditIds = dataList.stream()
-                                       .map(AnimalAdoptRecordDTO::getAuditId)
-                                       .collect(Collectors.toSet());
+        Set<String> userIds = CollUtil.newHashSet();
+        userIds.addAll(dataList.stream()
+                               .map(AnimalAdoptRecordDTO::getAdoptUserId)
+                               .collect(Collectors.toSet()));
+        userIds.addAll(dataList.stream()
+                               .map(AnimalAdoptRecordDTO::getAuditId)
+                               .collect(Collectors.toSet()));
 
-        List<Member> adoptUserList = memberMapper.selectBatchIds(adoptUserIds);
-        List<Member> auditorList = memberMapper.selectBatchIds(auditIds);
-
-        Map<String, Member> adoptUserMap = Collections.emptyMap();
-        if (CollUtil.isNotEmpty(adoptUserList)) {
-            adoptUserMap = adoptUserList.stream()
-                                        .collect(Collectors.toMap(Member::getId, member -> member));
-        }
-
-        Map<String, Member> auditorMap = Collections.emptyMap();
-        if (CollUtil.isNotEmpty(auditorList)) {
-            auditorMap = auditorList.stream()
-                                    .collect(Collectors.toMap(Member::getId, member -> member));
+        Map<String, Member> memberMap = memberService.getMemberMap(userIds);
+        if (CollUtil.isEmpty(memberMap)) {
+            return;
         }
 
         for (AnimalAdoptRecordDTO record : dataList) {
-            Member adoptUser = adoptUserMap.get(record.getAdoptUserId());
+            Member adoptUser = memberMap.get(record.getAdoptUserId());
             if (ObjectUtil.isNotNull(adoptUser)) {
                 record.setAdoptUserName(adoptUser.getNickName());
                 record.setAdoptUserAccount(adoptUser.getAccount());
             }
 
-            Member auditor = auditorMap.get(record.getAuditId());
+            Member auditor = memberMap.get(record.getAuditId());
+            if (ObjectUtil.isNotNull(auditor)) {
+                record.setAuditorName(auditor.getNickName());
+                record.setAuditorPhone(auditor.getPhone());
+            }
+        }
+    }
+
+    private void fillContributionRecordListData(List<AnimalContributionRecordDTO> dataList) {
+        if (CollUtil.isEmpty(dataList)) {
+            return;
+        }
+        Set<String> userIds = CollUtil.newHashSet();
+        userIds.addAll(dataList.stream()
+                               .map(AnimalContributionRecordDTO::getApplyUserId)
+                               .collect(Collectors.toSet()));
+        userIds.addAll(dataList.stream()
+                               .map(AnimalContributionRecordDTO::getAuditId)
+                               .collect(Collectors.toSet()));
+
+        Map<String, Member> memberMap = memberService.getMemberMap(userIds);
+        if (CollUtil.isEmpty(memberMap)) {
+            return;
+        }
+
+        for (AnimalContributionRecordDTO record : dataList) {
+            Member applyUser = memberMap.get(record.getApplyUserId());
+            if (ObjectUtil.isNotNull(applyUser)) {
+                record.setApplyUserName(applyUser.getNickName());
+                record.setApplyUserAccount(applyUser.getAccount());
+            }
+
+            Member auditor = memberMap.get(record.getAuditId());
             if (ObjectUtil.isNotNull(auditor)) {
                 record.setAuditorName(auditor.getNickName());
                 record.setAuditorPhone(auditor.getPhone());

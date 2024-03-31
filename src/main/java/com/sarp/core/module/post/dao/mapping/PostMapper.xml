@@ -6,15 +6,11 @@
     <!--@Table tbl_post-->
     <id column="id" jdbcType="VARCHAR" property="id" />
     <result column="title" jdbcType="VARCHAR" property="title" />
-    <result column="content" jdbcType="LONGVARCHAR" property="content" />
-    <result column="post_abstract" jdbcType="LONGVARCHAR" property="postAbstract" />
     <result column="biz_type" jdbcType="INTEGER" property="bizType" />
-    <result column="status" jdbcType="INTEGER" property="status" />
-    <result column="animal_id" jdbcType="VARCHAR" property="animalId" />
     <result column="category_id" jdbcType="VARCHAR" property="categoryId" />
-    <result column="animal_name" jdbcType="VARCHAR" property="animalName" />
-    <result column="animal_gender" jdbcType="VARCHAR" property="animalGender" />
-    <result column="animal_desc" jdbcType="VARCHAR" property="animalDesc" />
+    <result column="post_abstract" jdbcType="LONGVARCHAR" property="postAbstract" />
+    <result column="content" jdbcType="LONGVARCHAR" property="content" />
+    <result column="status" jdbcType="INTEGER" property="status" />
     <result column="audit_id" jdbcType="VARCHAR" property="auditId" />
     <result column="audit_time" jdbcType="TIMESTAMP" property="auditTime" />
     <result column="audit_remark" jdbcType="VARCHAR" property="auditRemark" />
@@ -27,15 +23,7 @@
   </resultMap>
   <sql id="Base_Column_List">
     <!--@mbg.generated-->
-    id, title, content, post_abstract, biz_type, `status`, animal_id, category_id, animal_name,
-    animal_gender, animal_desc, audit_id, audit_time, audit_remark, close_reason, create_id, create_time,
-    update_id, update_time, is_del
+    id, title, biz_type, category_id, post_abstract, content, `status`, audit_id, audit_time, audit_remark,
+    close_reason, create_id, create_time, update_id, update_time, is_del
   </sql>
-
-<!--  <select id="getList" resultType="com.sarp.core.module.post.model.entity.Post">-->
-<!--    WITH RECURSIVE cte AS (-->
-<!--    SELECT child_id FROM your_table WHERE parent_id = #{parentId} UNION ALL-->
-<!--    SELECT t.child_id FROM your_table t INNER JOIN cte ON t.parent_id = cte.child_id )-->
-<!--    SELECT * FROM cte-->
-<!--  </select>-->
 </mapper>

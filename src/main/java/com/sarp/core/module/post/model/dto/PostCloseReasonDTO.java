@@ -16,9 +16,6 @@ import lombok.NoArgsConstructor;
 @Builder
 public class PostCloseReasonDTO {
 
-    @ApiModelProperty(value = "帖子id")
-    private String id;
-
     @ApiModelProperty(value = "帖子关闭原因")
     private String closeReason;
 

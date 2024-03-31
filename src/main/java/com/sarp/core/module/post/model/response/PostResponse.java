@@ -19,8 +19,11 @@ public class PostResponse extends BaseResponse {
     @ApiModelProperty(value = "标题")
     private String title;
 
-    @ApiModelProperty(value = "宠物名称")
-    private String animalName;
+    @ApiModelProperty(value = "创建人id")
+    private String createId;
+
+    @ApiModelProperty(value = "创建用户名称")
+    private String createUser;
 
     @ApiModelProperty(value = "动物类目id")
     private String categoryId;
@@ -34,10 +37,7 @@ public class PostResponse extends BaseResponse {
     @ApiModelProperty(value = "文章摘要")
     private String postAbstract;
 
-    @ApiModelProperty(value = "创建人id")
-    private String createId;
-
-    @ApiModelProperty(value = "创建用户名称")
-    private String createUser;
+    @ApiModelProperty(value = "图片")
+    private String picUrl;
 
 }

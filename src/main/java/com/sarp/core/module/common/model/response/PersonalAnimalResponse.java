@@ -33,13 +33,10 @@ public class PersonalAnimalResponse extends BaseResponse {
     @ApiModelProperty(value = "宠物照片url")
     private String picUrl;
 
-    @ApiModelProperty(value = "帖子数")
-    private Integer postAmount;
+    @ApiModelProperty(value = "遗失状态")
+    private Integer isLost;
 
-    @ApiModelProperty(value = "捐助数")
-    private Integer contributeAmount;
-
-    @ApiModelProperty(value = "申请数")
-    private Integer applyAmount;
+//    @ApiModelProperty(value = "捐助数")
+//    private Integer contributeAmount;
 
 }

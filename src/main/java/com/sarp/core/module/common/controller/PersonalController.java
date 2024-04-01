@@ -1,5 +1,6 @@
 package com.sarp.core.module.common.controller;
 
+import com.sarp.core.module.common.model.request.PersonalInfoEditRequest;
 import com.sarp.core.module.common.model.request.PersonalListQueryRequest;
 import com.sarp.core.module.common.helper.CommonHelper;
 import com.sarp.core.module.common.model.HttpResult;
@@ -9,14 +10,14 @@ import com.sarp.core.module.common.model.response.PersonalAnimalResponse;
 import com.sarp.core.module.common.model.response.PersonalPostResponse;
 import com.sarp.core.module.common.model.vo.PageVO;
 import com.sarp.core.module.common.service.CommonService;
+import com.sarp.core.module.common.service.PersonalService;
+import com.sarp.core.module.post.helper.PostHelper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * @date 2024/3/12 10:33
@@ -31,8 +32,10 @@ import org.springframework.web.bind.annotation.RestController;
 public class PersonalController {
 
     private CommonService commonService;
+    private PersonalService personalService;
 
     private CommonHelper commonHelper;
+    private PostHelper postHelper;
 
     @ApiOperation(value = "分页查询我的宠物信息列表")
     @GetMapping("/listPageAnimal")
@@ -50,10 +53,15 @@ public class PersonalController {
                                                                          PersonalListQueryRequest request) {
         PageVO<PersonalPostResponse> postResponsePageVO =
                 CommonConvert.convertPageToPageVo(commonService.listPagePost(request), PersonalPostResponse.class);
-//        commonHelper.fillPersonalAnimalListData(animalResponsePageVO.getDataList());
+        postHelper.fillPostListData(postResponsePageVO.getDataList());
         return HttpResult.success(postResponsePageVO);
     }
 
-
+    @ApiOperation(value = "修改个人用户信息")
+    @PostMapping("/editPersonalInfo")
+    public HttpResult<Void> editPersonalInfo(@RequestBody @Validated PersonalInfoEditRequest request) {
+        personalService.editPersonalInfo(request);
+        return HttpResult.success();
+    }
 
 }

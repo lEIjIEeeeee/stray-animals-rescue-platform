@@ -9,6 +9,9 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.sarp.core.context.ContextUtils;
 import com.sarp.core.exception.BizException;
+import com.sarp.core.module.auth.manager.MemberManager;
+import com.sarp.core.module.category.manager.CategoryManager;
+import com.sarp.core.module.category.model.entity.Category;
 import com.sarp.core.module.category.service.CategoryService;
 import com.sarp.core.module.common.enums.AuditResultEnum;
 import com.sarp.core.module.common.enums.HttpResultCode;
@@ -16,10 +19,13 @@ import com.sarp.core.module.common.enums.UploadBizTypeEnum;
 import com.sarp.core.module.common.model.entity.BaseDO;
 import com.sarp.core.module.media.dao.MediaMapper;
 import com.sarp.core.module.media.model.entity.Media;
+import com.sarp.core.module.media.service.MediaService;
 import com.sarp.core.module.post.dao.PostMapper;
 import com.sarp.core.module.post.enums.PostSearchTypeEnum;
 import com.sarp.core.module.post.enums.PostStatusEnum;
+import com.sarp.core.module.post.manager.PostManager;
 import com.sarp.core.module.post.model.dto.PostCloseReasonDTO;
+import com.sarp.core.module.post.model.dto.PostDetailDTO;
 import com.sarp.core.module.post.model.entity.Post;
 import com.sarp.core.module.post.model.request.*;
 import com.sarp.core.module.user.dao.MemberMapper;
@@ -49,6 +55,11 @@ public class PostService {
     private MediaMapper mediaMapper;
 
     private CategoryService categoryService;
+    private MediaService mediaService;
+
+    private PostManager postManager;
+    private MemberManager memberManager;
+    private CategoryManager categoryManager;
 
     @Transactional(rollbackFor = Exception.class)
     public void submitPost(SubmitPostRequest request) {
@@ -70,7 +81,7 @@ public class PostService {
     public void resubmitPost(SubmitPostRequest request) {
         String userId = ContextUtils.getCurrentUserId();
 
-        Post post = getByIdWithExp(request.getId());
+        Post post = postManager.getByIdWithExp(request.getId());
         checkPostInfo(post, userId);
 
         JavaBeanUtils.map(request, post);
@@ -86,6 +97,24 @@ public class PostService {
         if (ObjectUtil.notEqual(post.getCreateId(), userId)) {
             throw new BizException(HttpResultCode.BIZ_EXCEPTION, "当前帖子没有操作权限");
         }
+    }
+
+    public PostDetailDTO get(String id) {
+        Post post = postManager.getByIdWithExp(id);
+        PostDetailDTO postDetail = JavaBeanUtils.map(post, PostDetailDTO.class);
+
+        Member createUser = memberManager.getByIdWithExp(post.getCreateId());
+        postDetail.setNickName(createUser.getNickName());
+        postDetail.setAvatar(createUser.getAvatar());
+
+        Category category = categoryManager.getByIdWithExp(post.getCategoryId());
+        postDetail.setCategoryName(category.getName());
+
+        List<Media> postMediaList = mediaService.getMediaList(post.getId(), UploadBizTypeEnum.POST);
+        if (CollUtil.isNotEmpty(postMediaList)) {
+            postDetail.setPicUrl(postMediaList.get(0).getPicUrl());
+        }
+        return postDetail;
     }
 
     public Page<Post> listPage(PostQueryRequest request) {
@@ -156,7 +185,7 @@ public class PostService {
 
     @Transactional(rollbackFor = Exception.class)
     public void audit(PostAuditRequest request) {
-        Post post = getByIdWithExp(request.getId());
+        Post post = postManager.getByIdWithExp(request.getId());
         if (!PostStatusEnum.AUDIT_WAIT.getCode().equals(post.getStatus())) {
             throw new BizException(HttpResultCode.BIZ_DATA_EXCEPTION, "该帖子状态异常，无法进行审核操作");
         }
@@ -178,7 +207,7 @@ public class PostService {
 
     @Transactional(rollbackFor = Exception.class)
     public void close(PostCloseRequest request) {
-        Post post = getByIdWithExp(request.getId());
+        Post post = postManager.getByIdWithExp(request.getId());
         if (PostStatusEnum.CLOSED.getCode().equals(post.getStatus())) {
             throw new BizException(HttpResultCode.BIZ_EXCEPTION, "该帖子已被关闭，无需操作");
         }
@@ -188,7 +217,7 @@ public class PostService {
     }
 
     public PostCloseReasonDTO getCloseReason(String id) {
-        Post post = getByIdWithExp(id);
+        Post post = postManager.getByIdWithExp(id);
         return PostCloseReasonDTO.builder()
                                  .closeReason(post.getCloseReason())
                                  .build();
@@ -196,16 +225,8 @@ public class PostService {
 
     @Transactional(rollbackFor = Exception.class)
     public void delete(PostDeleteRequest request) {
-        Post post = getByIdWithExp(request.getId());
+        Post post = postManager.getByIdWithExp(request.getId());
         postMapper.deleteByIdWithFill(post);
-    }
-
-    private Post getByIdWithExp(String id) {
-        Post post = postMapper.selectById(id);
-        if (ObjectUtil.isNull(post)) {
-            throw new BizException(HttpResultCode.DATA_NOT_EXISTED);
-        }
-        return post;
     }
 
 }

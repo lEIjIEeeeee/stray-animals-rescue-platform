@@ -25,11 +25,23 @@ public class PersonalInfoDTO {
     @ApiModelProperty(value = "头像")
     private String avatar;
 
-    @ApiModelProperty(value = "昵称")
-    private String nickName;
+    @ApiModelProperty(value = "登录账号")
+    private String account;
 
     @ApiModelProperty(value = "用户类型")
     private String userType;
+
+    @ApiModelProperty(value = "手机号")
+    private String phone;
+
+    @ApiModelProperty(value = "昵称")
+    private String nickName;
+
+    @ApiModelProperty(value = "性别")
+    private String gender;
+
+    @ApiModelProperty(value = "真实姓名")
+    private String realName;
 
     @ApiModelProperty(value = "创建时间")
     @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")

@@ -25,6 +25,9 @@ public class PostResponse extends BaseResponse {
     @ApiModelProperty(value = "创建用户名称")
     private String createUser;
 
+    @ApiModelProperty(value = "头像")
+    private String avatar;
+
     @ApiModelProperty(value = "动物类目id")
     private String categoryId;
 

@@ -67,6 +67,7 @@ public class PostHelper {
             Member createUser = createUserMap.get(response.getCreateId());
             if (ObjectUtil.isNotNull(createUser)) {
                 response.setCreateUser(createUser.getNickName());
+                response.setAvatar(createUser.getAvatar());
             }
             List<Media> mediaList = mediaMap.get(response.getId());
             if (CollUtil.isNotEmpty(mediaList)) {

@@ -25,10 +25,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @date 2024/1/31 16:46
@@ -146,6 +144,18 @@ public class CategoryService extends ServiceImpl<CategoryMapper, Category> {
 
         return CollUtil.isNotEmpty(recursiveDownCategoryIds)
                 ? recursiveDownCategoryIds : Collections.emptySet();
+    }
+
+    public Map<String, Category> getCategoryMap(Collection<String> categoryIds) {
+        if (CollUtil.isEmpty(categoryIds)) {
+            return Collections.emptyMap();
+        }
+        List<Category> categoryList = categoryMapper.selectBatchIds(categoryIds);
+        if (CollUtil.isEmpty(categoryList)) {
+            return Collections.emptyMap();
+        }
+        return categoryList.stream()
+                           .collect(Collectors.toMap(Category::getId, category -> category));
     }
 
 }

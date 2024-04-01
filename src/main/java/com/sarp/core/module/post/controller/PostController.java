@@ -6,6 +6,7 @@ import com.sarp.core.module.common.model.convert.CommonConvert;
 import com.sarp.core.module.common.model.request.BaseQueryRequest;
 import com.sarp.core.module.common.model.vo.PageVO;
 import com.sarp.core.module.post.helper.PostHelper;
+import com.sarp.core.module.post.model.dto.PostDetailDTO;
 import com.sarp.core.module.post.model.entity.Post;
 import com.sarp.core.module.post.model.request.PostQueryRequest;
 import com.sarp.core.module.post.model.request.SubmitPostRequest;
@@ -17,6 +18,8 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import javax.validation.constraints.NotBlank;
 
 /**
  * @date 2024/1/30 11:18
@@ -58,6 +61,12 @@ public class PostController {
         PageVO<PostResponse> postResponsePageVO = CommonConvert.convertPageToPageVo(postPage, PostResponse.class);
         postHelper.fillPostListData(postResponsePageVO.getDataList());
         return HttpResult.success(postResponsePageVO);
+    }
+
+    @ApiOperation(value = "查询帖子详情")
+    @GetMapping("/get")
+    public HttpResult<PostDetailDTO> get(@RequestParam @NotBlank String id) {
+        return HttpResult.success(postService.get(id));
     }
 
 }

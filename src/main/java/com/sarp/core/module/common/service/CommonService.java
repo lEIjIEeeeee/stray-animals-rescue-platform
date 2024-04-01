@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.sarp.core.context.ContextUtils;
 import com.sarp.core.module.animal.dao.AnimalMapper;
 import com.sarp.core.module.animal.model.entity.Animal;
+import com.sarp.core.module.auth.manager.MemberManager;
 import com.sarp.core.module.auth.manager.UserManager;
 import com.sarp.core.module.category.dao.CategoryMapper;
 import com.sarp.core.module.category.model.entity.Category;
@@ -21,6 +22,7 @@ import com.sarp.core.module.post.model.entity.Post;
 import com.sarp.core.module.user.dao.UserMapper;
 import com.sarp.core.module.user.enums.UserStatusEnum;
 import com.sarp.core.module.user.enums.UserTypeEnum;
+import com.sarp.core.module.user.model.entity.Member;
 import com.sarp.core.module.user.model.entity.User;
 import com.sarp.core.util.JavaBeanUtils;
 import com.sarp.core.util.PageUtils;
@@ -48,6 +50,7 @@ public class CommonService {
     private PostMapper postMapper;
 
     private UserManager userManager;
+    private MemberManager memberManager;
 
     public CategoryTreeDTO getCategoryTree() {
         CategoryTreeDTO categoryTree = getCategoryEmptyTree();
@@ -99,13 +102,13 @@ public class CommonService {
     public PersonalInfoDTO personalInfo() {
         String userId = ContextUtils.getCurrentUserId();
         User user = userManager.getByIdWithExp(userId);
-        PersonalInfoDTO personalInfo = PersonalInfoDTO.builder()
-                                                      .id(userId)
-                                                      .avatar(user.getAvatar())
-                                                      .nickName(user.getName())
-                                                      .userType(user.getUserType())
-                                                      .createTime(user.getCreateTime())
-                                                      .build();
+
+        PersonalInfoDTO personalInfo = JavaBeanUtils.map(user, PersonalInfoDTO.class);
+        personalInfo.setNickName(user.getName());
+
+        Member member = memberManager.getByIdWithExp(userId);
+        personalInfo.setGender(member.getGender());
+        personalInfo.setRealName(member.getRealName());
         return personalInfo;
     }
 

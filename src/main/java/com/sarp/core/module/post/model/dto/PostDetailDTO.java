@@ -3,9 +3,9 @@ package com.sarp.core.module.post.model.dto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 import java.util.Date;
 
@@ -16,7 +16,7 @@ import java.util.Date;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
+@SuperBuilder
 public class PostDetailDTO {
 
     @ApiModelProperty(value = "帖子id")
@@ -41,11 +41,17 @@ public class PostDetailDTO {
     @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
     private Date createTime;
 
+    @ApiModelProperty(value = "动物类目id")
+    private String categoryId;
+
     @ApiModelProperty(value = "动物类目")
     private String categoryName;
 
     @ApiModelProperty(value = "帖子分类")
     private Integer bizType;
+
+    @ApiModelProperty(value = "帖子摘要")
+    private String postAbstract;
 
     @ApiModelProperty(value = "正文内容")
     private String content;

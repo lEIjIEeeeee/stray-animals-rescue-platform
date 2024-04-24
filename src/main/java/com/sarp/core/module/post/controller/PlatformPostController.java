@@ -6,6 +6,7 @@ import com.sarp.core.module.common.model.convert.CommonConvert;
 import com.sarp.core.module.common.model.request.BaseQueryRequest;
 import com.sarp.core.module.common.model.vo.PageVO;
 import com.sarp.core.module.post.helper.PostHelper;
+import com.sarp.core.module.post.model.dto.PlatformPostDetailDTO;
 import com.sarp.core.module.post.model.entity.Post;
 import com.sarp.core.module.post.model.request.PlatformPostQueryRequest;
 import com.sarp.core.module.post.model.request.PostAuditRequest;
@@ -50,7 +51,11 @@ public class PlatformPostController {
         return HttpResult.success(postResponsePageVO);
     }
 
-    //TODO 查看帖子详情
+    @ApiOperation(value = "查询帖子详情")
+    @GetMapping("/get")
+    public HttpResult<PlatformPostDetailDTO> get(@RequestParam @NotBlank String id) {
+        return HttpResult.success(postService.getPlatform(id));
+    }
 
     @ApiOperation(value = "审核帖子")
     @PostMapping("/audit")
@@ -75,7 +80,7 @@ public class PlatformPostController {
     @ApiOperation(value = "删除帖子")
     @PostMapping("/delete")
     public HttpResult<Void> delete(@RequestBody @Validated PostDeleteRequest request) {
-        postService.delete(request);
+        postService.platformDelete(request);
         return HttpResult.success();
     }
 

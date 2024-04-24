@@ -1,4 +1,4 @@
-package com.sarp.core.module.post.model.request;
+package com.sarp.core.module.comment.model.request;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
@@ -9,17 +9,17 @@ import lombok.NoArgsConstructor;
 import javax.validation.constraints.NotBlank;
 
 /**
- * @date 2024/2/28 11:29
+ * @date 2024/4/20 16:45
  */
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class PostDeleteRequest {
+public class CommentDeleteRequest {
 
-    @ApiModelProperty(value = "帖子id")
-    @NotBlank(message = "id不能为空")
+    @ApiModelProperty(value = "评论id")
+    @NotBlank(message = "评论id不能为空")
     private String id;
 
 }

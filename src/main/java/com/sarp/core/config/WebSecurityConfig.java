@@ -90,12 +90,14 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter implements W
                         "/image/animal/**",
                         "/image/post/**",
                         "/image/contribution/**",
+                        "/image/notice/**",
                         "/image/common/**")
                 .addResourceLocations(
                         "file:" + CommonConstants.STATIC_LOCATION + "avatar/",
                         "file:" + CommonConstants.STATIC_LOCATION + "animal/",
                         "file:" + CommonConstants.STATIC_LOCATION + "post/",
                         "file:" + CommonConstants.STATIC_LOCATION + "contribution/",
+                        "file:" + CommonConstants.STATIC_LOCATION + "notice/",
                         "file:" + CommonConstants.STATIC_LOCATION + "common/");
     }
 }

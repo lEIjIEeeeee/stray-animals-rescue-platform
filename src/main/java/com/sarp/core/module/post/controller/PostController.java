@@ -8,6 +8,7 @@ import com.sarp.core.module.common.model.vo.PageVO;
 import com.sarp.core.module.post.helper.PostHelper;
 import com.sarp.core.module.post.model.dto.PostDetailDTO;
 import com.sarp.core.module.post.model.entity.Post;
+import com.sarp.core.module.post.model.request.PostDeleteRequest;
 import com.sarp.core.module.post.model.request.PostQueryRequest;
 import com.sarp.core.module.post.model.request.SubmitPostRequest;
 import com.sarp.core.module.post.model.response.PostResponse;
@@ -56,7 +57,7 @@ public class PostController {
     @ApiOperation(value = "分页查询帖子列表")
     @GetMapping("/listPage")
     public HttpResult<PageVO<PostResponse>> listPage(@Validated(BaseQueryRequest.ListPage.class)
-                                                     PostQueryRequest request) {
+                                                             PostQueryRequest request) {
         Page<Post> postPage = postService.listPage(request);
         PageVO<PostResponse> postResponsePageVO = CommonConvert.convertPageToPageVo(postPage, PostResponse.class);
         postHelper.fillPostListData(postResponsePageVO.getDataList());
@@ -67,6 +68,13 @@ public class PostController {
     @GetMapping("/get")
     public HttpResult<PostDetailDTO> get(@RequestParam @NotBlank String id) {
         return HttpResult.success(postService.get(id));
+    }
+
+    @ApiOperation(value = "删除帖子")
+    @PostMapping("/delete")
+    public HttpResult<Void> delete(@RequestBody @Validated PostDeleteRequest request) {
+        postService.delete(request);
+        return HttpResult.success();
     }
 
 }

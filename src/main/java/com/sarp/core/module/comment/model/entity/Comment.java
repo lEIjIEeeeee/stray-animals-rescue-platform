@@ -14,10 +14,10 @@ import lombok.experimental.SuperBuilder;
 
 /**
  * 评论信息表
- * @date 2024/2/23 16:29
+ * @date 2024/4/8 10:31
  */
 
-@ApiModel(description="评论信息表")
+@ApiModel(description = "评论信息表")
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Accessors(chain = true)
@@ -28,31 +28,45 @@ import lombok.experimental.SuperBuilder;
 public class Comment extends BaseDO {
 
     /**
-     * 父级评论id
+     * 评论类型 ROOT-根评论 REPLAY-回复评论
+     */
+    @TableField(value = "type")
+    @ApiModelProperty(value = "评论类型 ROOT-根评论 REPLAY-回复评论")
+    private String type;
+
+    /**
+     * 父级id
      */
     @TableField(value = "pid")
-    @ApiModelProperty(value="父级评论id")
+    @ApiModelProperty(value = "父级id")
     private String pid;
+
+    /**
+     * 根评论id
+     */
+    @TableField(value = "root_id")
+    @ApiModelProperty(value = "根评论id")
+    private String rootId;
 
     /**
      * 帖子id
      */
     @TableField(value = "post_id")
-    @ApiModelProperty(value="帖子id")
+    @ApiModelProperty(value = "帖子id")
     private String postId;
+
+    /**
+     * 回复用户id
+     */
+    @TableField(value = "to_user_id")
+    @ApiModelProperty(value = "回复用户id")
+    private String toUserId;
 
     /**
      * 评论内容
      */
     @TableField(value = "content")
-    @ApiModelProperty(value="评论内容")
+    @ApiModelProperty(value = "评论内容")
     private String content;
-
-    /**
-     * 是否显示 0-否 1-是
-     */
-    @TableField(value = "is_display")
-    @ApiModelProperty(value="是否显示 0-否 1-是")
-    private Integer isDisplay;
 
 }

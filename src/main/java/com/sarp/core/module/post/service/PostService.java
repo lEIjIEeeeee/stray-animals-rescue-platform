@@ -24,6 +24,7 @@ import com.sarp.core.module.post.dao.PostMapper;
 import com.sarp.core.module.post.enums.PostSearchTypeEnum;
 import com.sarp.core.module.post.enums.PostStatusEnum;
 import com.sarp.core.module.post.manager.PostManager;
+import com.sarp.core.module.post.model.dto.PlatformPostDetailDTO;
 import com.sarp.core.module.post.model.dto.PostCloseReasonDTO;
 import com.sarp.core.module.post.model.dto.PostDetailDTO;
 import com.sarp.core.module.post.model.entity.Post;
@@ -85,14 +86,16 @@ public class PostService {
         checkPostInfo(post, userId);
 
         JavaBeanUtils.map(request, post);
-        post.setBizType(request.getBizType().getCode())
-            .setStatus(PostStatusEnum.AUDIT_WAIT.getCode());
+        post.setBizType(request.getBizType().getCode());
+        if (!PostStatusEnum.AUDIT_PASS.getCode().equals(post.getStatus())) {
+            post.setStatus(PostStatusEnum.AUDIT_WAIT.getCode());
+        }
         postMapper.updateById(post);
     }
 
     private void checkPostInfo(Post post, String userId) {
-        if (ObjectUtil.notEqual(PostStatusEnum.AUDIT_REJECT.getCode(), post.getStatus())) {
-            throw new BizException(HttpResultCode.BIZ_EXCEPTION, "当前帖子状态异常，无法进行操作");
+        if (ObjectUtil.equal(PostStatusEnum.CLOSED.getCode(), post.getStatus())) {
+            throw new BizException(HttpResultCode.BIZ_EXCEPTION, "当前帖子已关闭，无法进行操作");
         }
         if (ObjectUtil.notEqual(post.getCreateId(), userId)) {
             throw new BizException(HttpResultCode.BIZ_EXCEPTION, "当前帖子没有操作权限");
@@ -102,7 +105,22 @@ public class PostService {
     public PostDetailDTO get(String id) {
         Post post = postManager.getByIdWithExp(id);
         PostDetailDTO postDetail = JavaBeanUtils.map(post, PostDetailDTO.class);
+        fillPostDetailData(postDetail, post);
+        return postDetail;
+    }
 
+    public PlatformPostDetailDTO getPlatform(String id) {
+        Post post = postManager.getByIdWithExp(id);
+        PlatformPostDetailDTO postDetail = JavaBeanUtils.map(post, PlatformPostDetailDTO.class);
+        fillPostDetailData(postDetail, post);
+        if(StrUtil.isNotBlank(post.getAuditId())) {
+            Member auditor = memberManager.getByIdWithExp(post.getAuditId());
+            postDetail.setAuditorName(auditor.getNickName());
+        }
+        return postDetail;
+    }
+
+    private void fillPostDetailData(PostDetailDTO postDetail, Post post) {
         Member createUser = memberManager.getByIdWithExp(post.getCreateId());
         postDetail.setNickName(createUser.getNickName());
         postDetail.setAvatar(createUser.getAvatar());
@@ -114,7 +132,6 @@ public class PostService {
         if (CollUtil.isNotEmpty(postMediaList)) {
             postDetail.setPicUrl(postMediaList.get(0).getPicUrl());
         }
-        return postDetail;
     }
 
     public Page<Post> listPage(PostQueryRequest request) {
@@ -225,6 +242,16 @@ public class PostService {
 
     @Transactional(rollbackFor = Exception.class)
     public void delete(PostDeleteRequest request) {
+        String userId = ContextUtils.getCurrentUserId();
+        Post post = postManager.getByIdWithExp(request.getId());
+        if (ObjectUtil.notEqual(post.getCreateId(), userId)) {
+            throw new BizException(HttpResultCode.BIZ_EXCEPTION, "无法删除其他用户的帖子");
+        }
+        postMapper.deleteByIdWithFill(post);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void platformDelete(PostDeleteRequest request) {
         Post post = postManager.getByIdWithExp(request.getId());
         postMapper.deleteByIdWithFill(post);
     }

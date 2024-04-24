@@ -5,10 +5,12 @@
     <!--@mbg.generated-->
     <!--@Table tbl_comment-->
     <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="type" jdbcType="VARCHAR" property="type" />
     <result column="pid" jdbcType="VARCHAR" property="pid" />
+    <result column="root_id" jdbcType="VARCHAR" property="rootId" />
     <result column="post_id" jdbcType="VARCHAR" property="postId" />
-    <result column="content" jdbcType="VARCHAR" property="content" />
-    <result column="is_display" jdbcType="INTEGER" property="isDisplay" />
+    <result column="to_user_id" jdbcType="VARCHAR" property="toUserId" />
+    <result column="content" jdbcType="LONGVARCHAR" property="content" />
     <result column="create_id" jdbcType="VARCHAR" property="createId" />
     <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
     <result column="update_id" jdbcType="VARCHAR" property="updateId" />
@@ -17,7 +19,41 @@
   </resultMap>
   <sql id="Base_Column_List">
     <!--@mbg.generated-->
-    id, pid, post_id, content, is_display, create_id, create_time, update_id, update_time, 
-    is_del
+    id, type, pid, root_id, post_id, to_user_id, content, create_id, create_time,
+    update_id, update_time, is_del
   </sql>
+
+  <select id="getReplayCountList" resultType="com.sarp.core.module.comment.model.dto.ReplayCountDTO">
+    SELECT
+    root_id, COUNT(*) AS replay_count
+    FROM `tbl_comment`
+    WHERE post_id = #{postId} AND `type` = 'REPLAY' AND is_del = 0
+    <if test="rootIds != null and rootIds.size() > 0">
+      AND root_id IN
+      <foreach collection="rootIds" item="id" index="index" open="(" close=")" separator=",">
+        #{id}
+      </foreach>
+    </if>
+    GROUP BY root_id
+  </select>
+
+  <select id="getReplayList" resultType="com.sarp.core.module.comment.model.dto.ReplayCommentDTO">
+    WITH table_with_row_numbers AS
+    (
+    SELECT
+    *, ROW_NUMBER() OVER (PARTITION BY root_id ORDER BY create_time ASC) AS row_num
+    FROM tbl_comment
+    WHERE post_id = #{postId} AND type = 'REPLAY' AND is_del = 0
+    <if test="rootIds != null and rootIds.size() > 0">
+      AND root_id IN
+      <foreach collection="rootIds" item="id" index="index" open="(" close=")" separator=",">
+        #{id}
+      </foreach>
+    </if>
+    )
+    SELECT
+    *
+    FROM table_with_row_numbers
+    WHERE #{pageSize} >= row_num
+  </select>
 </mapper>

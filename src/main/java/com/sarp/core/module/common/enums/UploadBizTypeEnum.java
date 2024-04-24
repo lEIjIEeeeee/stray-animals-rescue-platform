@@ -14,6 +14,7 @@ public enum UploadBizTypeEnum {
     ANIMAL("animal", "宠物"),
     POST("post", "帖子"),
     CONTRIBUTION("contribution", "捐助"),
+    NOTICE("notice", "公告"),
     COMMON("common", "公共")
     ;
 

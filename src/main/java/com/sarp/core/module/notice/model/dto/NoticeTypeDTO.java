@@ -1,4 +1,4 @@
-package com.sarp.core.module.post.model.request;
+package com.sarp.core.module.notice.model.dto;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
@@ -6,20 +6,20 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.validation.constraints.NotBlank;
-
 /**
- * @date 2024/2/28 11:29
+ * @date 2024/4/22 14:07
  */
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class PostDeleteRequest {
+public class NoticeTypeDTO {
 
-    @ApiModelProperty(value = "帖子id")
-    @NotBlank(message = "id不能为空")
+    @ApiModelProperty(value = "分类id")
     private String id;
+
+    @ApiModelProperty(value = "分类名称")
+    private String name;
 
 }

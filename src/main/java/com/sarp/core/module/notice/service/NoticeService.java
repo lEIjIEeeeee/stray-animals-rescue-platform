@@ -5,6 +5,7 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.sarp.core.module.common.enums.EnableStatusEnum;
 import com.sarp.core.module.notice.dao.NoticeArticleMapper;
 import com.sarp.core.module.notice.dao.NoticeTypeMapper;
 import com.sarp.core.module.notice.manager.NoticeArticleManager;
@@ -56,6 +57,7 @@ public class NoticeService {
 
     public List<NoticeTypeDTO> getNoticeTypeDropdownList () {
         List<NoticeType> noticeTypeList = noticeTypeMapper.selectList(Wrappers.lambdaQuery(NoticeType.class)
+                                                                              .eq(NoticeType::getStatus, EnableStatusEnum.ENABLE.getCode())
                                                                               .orderByAsc(NoticeType::getSort)
                                                                               .orderByDesc(NoticeType::getUpdateTime));
         if (CollUtil.isEmpty(noticeTypeList)) {

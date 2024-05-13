@@ -25,4 +25,7 @@ public class AnimalQueryRequest extends BaseQueryRequest {
     @ApiModelProperty(value = "是否遗失")
     private Integer isLost;
 
+    @ApiModelProperty(value = "动物类目id集合")
+    private String categoryIds;
+
 }

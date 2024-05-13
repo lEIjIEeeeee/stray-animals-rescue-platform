@@ -10,4 +10,6 @@ public class CommonConstants {
 
     public static final String UPLOAD_URL_PATTERN = "http://127.0.0.1:8080/image/";
 
+    public static final String DEFAULT_USER_PASSWORD = "123456";
+
 }

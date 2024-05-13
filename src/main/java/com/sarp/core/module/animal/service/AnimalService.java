@@ -77,6 +77,13 @@ public class AnimalService {
                                                           .eq(request.getIsAdopt() != null, Animal::getIsAdopt, request.getIsAdopt())
                                                           .eq(request.getIsLost() != null, Animal::getIsLost, request.getIsLost())
                                                           .orderByDesc(Animal::getUpdateTime);
+        if (StrUtil.isNotBlank(request.getCategoryIds())) {
+            List<String> categoryIds = CollUtil.newArrayList(StrUtil.split(request.getCategoryIds(), StrUtil.COMMA));
+            Set<String> categoryIdSet = categoryService.getRecursiveCategoryIds(categoryIds);
+            if (CollUtil.isNotEmpty(categoryIdSet)) {
+                queryWrapper.in(Animal::getCategoryId, categoryIdSet);
+            }
+        }
         return animalMapper.selectPage(PageUtils.createPage(request), queryWrapper);
     }
 

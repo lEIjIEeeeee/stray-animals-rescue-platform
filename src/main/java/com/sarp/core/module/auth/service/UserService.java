@@ -17,6 +17,7 @@ import com.sarp.core.module.auth.model.request.UserIdRequest;
 import com.sarp.core.module.auth.model.request.UserQueryRequest;
 import com.sarp.core.module.auth.model.request.UserRequest;
 import com.sarp.core.module.auth.util.AuthNoGenerateUtils;
+import com.sarp.core.module.common.constant.CommonConstants;
 import com.sarp.core.module.common.enums.HttpResultCode;
 import com.sarp.core.module.common.model.entity.BaseDO;
 import com.sarp.core.module.user.dao.MemberMapper;
@@ -165,7 +166,7 @@ public class UserService {
     @Transactional(rollbackFor = Exception.class)
     public void resetPassword(UserIdRequest request) {
         User user = userManager.getByIdWithExp(request.getId());
-        String encryptPwd = LoginService.encryptPwd(user.getPhone(), user.getSalt());
+        String encryptPwd = LoginService.encryptPwd(CommonConstants.DEFAULT_USER_PASSWORD, user.getSalt());
         user.setPassword(encryptPwd)
             .setUpdateId(ContextUtils.getCurrentUserId())
             .setUpdateTime(DateUtil.date());

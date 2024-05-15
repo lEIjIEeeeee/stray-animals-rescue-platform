@@ -6,6 +6,8 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.sarp.core.context.ContextUtils;
+import com.sarp.core.module.adopt.dao.AdoptRecordMapper;
+import com.sarp.core.module.adopt.model.entity.AdoptRecord;
 import com.sarp.core.module.animal.dao.AnimalMapper;
 import com.sarp.core.module.animal.model.entity.Animal;
 import com.sarp.core.module.auth.manager.MemberManager;
@@ -48,6 +50,7 @@ public class CommonService {
     private UserMapper userMapper;
     private AnimalMapper animalMapper;
     private PostMapper postMapper;
+    private AdoptRecordMapper adoptRecordMapper;
 
     private UserManager userManager;
     private MemberManager memberManager;
@@ -147,8 +150,30 @@ public class CommonService {
                                                                    .or(wp -> wp.like(Post::getPostAbstract, request.getSearchContent()))
 //                                                                   .or(wp -> wp.like(Post::getAnimalName, request.getSearchContent()))
                                                             ;
-                                                        }).orderByDesc(Post::getUpdateTime);
+                                                        })
+                                                        .orderByDesc(Post::getUpdateTime);
         return postMapper.selectPage(PageUtils.createPage(request), queryWrapper);
+    }
+
+    public Page<AdoptRecord> listPageAdoptRecord(PersonalListQueryRequest request) {
+        String userId = ContextUtils.getCurrentUserId();
+        LambdaQueryWrapper<AdoptRecord> queryWrapper = Wrappers.lambdaQuery(AdoptRecord.class)
+                                                               .eq(AdoptRecord::getCreateId, userId)
+                                                               .orderByDesc(AdoptRecord::getCreateTime)
+                                                               .orderByDesc(AdoptRecord::getUpdateTime);
+        if (StrUtil.isNotBlank(request.getSearchContent())) {
+            List<Animal> animalList = animalMapper.selectList(Wrappers.lambdaQuery(Animal.class)
+                                                                      .like(Animal::getName, request.getSearchContent())
+                                                                      .or()
+                                                                      .like(Animal::getAnimalNo, request.getSearchContent()));
+            if (CollUtil.isNotEmpty(animalList)) {
+                List<String> animalIds = animalList.stream()
+                                                   .map(Animal::getId)
+                                                   .collect(Collectors.toList());
+                queryWrapper.in(AdoptRecord::getAnimalId, animalIds);
+            }
+        }
+        return adoptRecordMapper.selectPage(PageUtils.createPage(request), queryWrapper);
     }
 
 }

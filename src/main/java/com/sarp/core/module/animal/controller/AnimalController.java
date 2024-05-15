@@ -3,10 +3,7 @@ package com.sarp.core.module.animal.controller;
 import com.sarp.core.module.animal.helper.AnimalHelper;
 import com.sarp.core.module.animal.model.dto.AnimalDetailDTO;
 import com.sarp.core.module.animal.model.dto.AnimalSelectListDTO;
-import com.sarp.core.module.animal.model.request.AdoptApplyRequest;
-import com.sarp.core.module.animal.model.request.AnimalQueryRequest;
-import com.sarp.core.module.animal.model.request.AnimalSelectRequest;
-import com.sarp.core.module.animal.model.request.ContributionApplyRequest;
+import com.sarp.core.module.animal.model.request.*;
 import com.sarp.core.module.animal.model.response.AnimalResponse;
 import com.sarp.core.module.animal.service.AnimalService;
 import com.sarp.core.module.common.model.HttpResult;
@@ -63,19 +60,19 @@ public class AnimalController {
         return HttpResult.success();
     }
 
+    @ApiOperation(value = "重新提交领养宠物申请")
+    @PostMapping("/reapplyAdopt")
+    public HttpResult<Void> reapplyAdopt(@RequestBody @Validated AdoptReapplyRequest request) {
+        animalService.reapplyAdopt(request);
+        return HttpResult.success();
+    }
+
     @ApiOperation(value = "提交捐助宠物申请")
     @PostMapping("/applyContribution")
     public HttpResult<Void> applyContribution(@RequestBody @Validated ContributionApplyRequest request) {
         animalService.applyContribution(request);
         return HttpResult.success();
     }
-
-//    @ApiOperation(value = "重新提交领养宠物申请")
-//    @PostMapping("/reApplyAdopt")
-//    public HttpResult<Void> reApplyAdopt(@RequestBody @Validated AdoptApplyRequest request) {
-//        animalService.applyAdopt(request);
-//        return HttpResult.success();
-//    }
 
     @ApiOperation(value = "发帖时获取宠物下拉列表")
     @GetMapping("/getAnimalListByCategoryId")

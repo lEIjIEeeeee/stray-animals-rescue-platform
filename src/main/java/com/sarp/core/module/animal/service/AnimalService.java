@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.sarp.core.context.ContextUtils;
 import com.sarp.core.exception.BizException;
 import com.sarp.core.module.adopt.dao.AdoptRecordMapper;
+import com.sarp.core.module.adopt.manager.AdoptRecordManager;
 import com.sarp.core.module.adopt.model.entity.AdoptRecord;
 import com.sarp.core.module.animal.dao.AnimalMapper;
 import com.sarp.core.module.animal.enums.AnimalSearchTypeEnum;
@@ -67,6 +68,7 @@ public class AnimalService {
     private AnimalHelper animalHelper;
 
     private AnimalManager animalManager;
+    private AdoptRecordManager adoptRecordManager;
 
     public Page<Animal> listPage(AnimalQueryRequest request) {
         LambdaQueryWrapper<Animal> queryWrapper = Wrappers.lambdaQuery(Animal.class)
@@ -276,9 +278,19 @@ public class AnimalService {
                                              .animalId(animal.getId())
                                              .contactPhone(request.getContactPhone())
                                              .status(AuditStatusEnum.AUDIT_WAIT.getCode())
+                                             .reapplyFlag(YesOrNoEnum.N.getCode())
                                              .remark(request.getRemark())
                                              .build();
         adoptRecordMapper.insert(adoptRecord);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void reapplyAdopt(AdoptReapplyRequest request) {
+
+        applyAdopt(request);
+        AdoptRecord adoptRecord = adoptRecordManager.getByIdWithExp(request.getId());
+        adoptRecord.setReapplyFlag(YesOrNoEnum.Y.getCode());
+        adoptRecordMapper.updateById(adoptRecord);
     }
 
     @Transactional(rollbackFor = Exception.class)

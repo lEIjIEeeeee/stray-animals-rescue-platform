@@ -67,6 +67,7 @@ public class ContributionService {
                                                                       .le(request.getAuditEndTime() != null, ContributionRecord::getAuditTime, request.getAuditEndTime())
                                                                       .ge(request.getApplyStartTime() != null, ContributionRecord::getCreateTime, request.getApplyStartTime())
                                                                       .le(request.getApplyEndTime() != null, ContributionRecord::getCreateTime, request.getApplyEndTime())
+                                                                      .orderByDesc(ContributionRecord::getCreateTime)
                                                                       .orderByDesc(ContributionRecord::getUpdateTime);
         if (request.getItemType() != null) {
             queryWrapper.eq(ContributionRecord::getItemType, request.getItemType().getCode());

@@ -68,6 +68,7 @@ public class AdoptService {
                                                                .le(request.getAdoptEndDate() != null, AdoptRecord::getEndDate, request.getAdoptEndDate())
                                                                .ge(request.getApplyStartTime() != null, AdoptRecord::getCreateTime, request.getApplyStartTime())
                                                                .le(request.getApplyEndTime() != null, AdoptRecord::getCreateTime, request.getApplyEndTime())
+                                                               .orderByDesc(AdoptRecord::getCreateTime)
                                                                .orderByDesc(AdoptRecord::getUpdateTime);
         if (request.getStatus() != null) {
             queryWrapper.eq(AdoptRecord::getStatus, request.getStatus().getCode());
@@ -205,15 +206,19 @@ public class AdoptService {
     @Transactional(rollbackFor = Exception.class)
     public void audit(AdoptAuditRequest request) {
         AdoptRecord adoptRecord = adoptRecordManager.getByIdWithExp(request.getId());
-        if (AuditResultEnum.PASS.equals(request.getAuditResult())) {
-            adoptRecord.setStatus(AuditStatusEnum.AUDIT_PASS.getCode())
-                       .setStartDate(DateUtil.date())
-                       .setAuditRemark(request.getAuditRemark());
 
+        if (AuditResultEnum.PASS.equals(request.getAuditResult())) {
             Animal animal = animalManager.getByIdWithExp(adoptRecord.getAnimalId());
+            if (YesOrNoEnum.Y.getCode().equals(animal.getIsAdopt())) {
+                throw new BizException(HttpResultCode.BIZ_EXCEPTION, "当前宠物已被领养，无法审核通过");
+            }
             animal.setOwnerId(adoptRecord.getCreateId())
                   .setIsAdopt(YesOrNoEnum.Y.getCode());
             animalMapper.updateById(animal);
+
+            adoptRecord.setStatus(AuditStatusEnum.AUDIT_PASS.getCode())
+                       .setStartDate(DateUtil.date())
+                       .setAuditRemark(request.getAuditRemark());
         } else {
             adoptRecord.setStatus(AuditStatusEnum.AUDIT_REJECT.getCode());
             if (StrUtil.isBlank(request.getAuditRemark())) {

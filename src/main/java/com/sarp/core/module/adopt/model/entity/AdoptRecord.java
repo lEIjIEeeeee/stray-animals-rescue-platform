@@ -45,6 +45,13 @@ public class AdoptRecord extends BaseDO {
     private Integer status;
 
     /**
+     * 是否重新提交申请 0-否 1-是
+     */
+    @TableField(value = "reapply_flag")
+    @ApiModelProperty(value = "是否重新提交申请 0-否 1-是")
+    private Integer reapplyFlag;
+
+    /**
      * 联系电话
      */
     @TableField(value = "contact_phone")

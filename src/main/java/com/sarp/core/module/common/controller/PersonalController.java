@@ -6,6 +6,7 @@ import com.sarp.core.module.common.helper.CommonHelper;
 import com.sarp.core.module.common.model.HttpResult;
 import com.sarp.core.module.common.model.convert.CommonConvert;
 import com.sarp.core.module.common.model.request.BaseQueryRequest;
+import com.sarp.core.module.common.model.response.AdoptRecordResponse;
 import com.sarp.core.module.common.model.response.PersonalAnimalResponse;
 import com.sarp.core.module.common.model.response.PersonalPostResponse;
 import com.sarp.core.module.common.model.vo.PageVO;
@@ -55,6 +56,16 @@ public class PersonalController {
                 CommonConvert.convertPageToPageVo(commonService.listPagePost(request), PersonalPostResponse.class);
         postHelper.fillPostListData(postResponsePageVO.getDataList());
         return HttpResult.success(postResponsePageVO);
+    }
+
+    @ApiOperation(value = "分页查询我的领养记录信息列表")
+    @GetMapping("/listPageAdoptRecord")
+    public HttpResult<PageVO<AdoptRecordResponse>> listPageAdoptRecord(@Validated(BaseQueryRequest.ListPage.class)
+                                                                               PersonalListQueryRequest request) {
+        PageVO<AdoptRecordResponse> adoptRecordResponsePageVO =
+                CommonConvert.convertPageToPageVo(commonService.listPageAdoptRecord(request), AdoptRecordResponse.class);
+        commonHelper.fillAdoptRecordListData(adoptRecordResponsePageVO.getDataList());
+        return HttpResult.success(adoptRecordResponsePageVO);
     }
 
     @ApiOperation(value = "修改个人用户信息")

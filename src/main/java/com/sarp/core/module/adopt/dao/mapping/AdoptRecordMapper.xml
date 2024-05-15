@@ -7,6 +7,7 @@
     <id column="id" jdbcType="VARCHAR" property="id" />
     <result column="animal_id" jdbcType="VARCHAR" property="animalId" />
     <result column="status" jdbcType="INTEGER" property="status" />
+    <result column="reapply_flag" jdbcType="INTEGER" property="reapplyFlag" />
     <result column="contact_phone" jdbcType="VARCHAR" property="contactPhone" />
     <result column="remark" jdbcType="VARCHAR" property="remark" />
     <result column="start_date" jdbcType="TIMESTAMP" property="startDate" />
@@ -22,7 +23,7 @@
   </resultMap>
   <sql id="Base_Column_List">
     <!--@mbg.generated-->
-    id, animal_id, `status`, contact_phone, remark, start_date, end_date, create_id, audit_id,
+    id, animal_id, `status`, reapply_flag, contact_phone, remark, start_date, end_date, create_id, audit_id,
     audit_time, audit_remark, create_time, update_id, update_time, is_del
   </sql>
 </mapper>

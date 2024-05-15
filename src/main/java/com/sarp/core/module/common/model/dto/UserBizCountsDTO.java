@@ -16,9 +16,6 @@ import lombok.NoArgsConstructor;
 @Builder
 public class UserBizCountsDTO {
 
-    @ApiModelProperty(value = "总访问量")
-    private Integer accessAmount;
-
     @ApiModelProperty(value = "宠物总数")
     private Integer animalAmount;
 

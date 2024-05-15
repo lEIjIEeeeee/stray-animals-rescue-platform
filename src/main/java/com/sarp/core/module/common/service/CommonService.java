@@ -121,11 +121,12 @@ public class CommonService {
                                                                   .eq(Animal::getOwnerId, userId));
         List<Post> postList = postMapper.selectList(Wrappers.lambdaQuery(Post.class)
                                                             .eq(Post::getCreateId, userId));
+        List<AdoptRecord> adoptRecordList = adoptRecordMapper.selectList(Wrappers.lambdaQuery(AdoptRecord.class)
+                                                                                 .eq(AdoptRecord::getCreateId, userId));
         return UserBizCountsDTO.builder()
-                               .accessAmount(NumberConstants.ZERO)
                                .animalAmount(animalList.size())
                                .postAmount(postList.size())
-                               .applyAmount(NumberConstants.ZERO)
+                               .applyAmount(adoptRecordList.size())
                                .build();
     }
 

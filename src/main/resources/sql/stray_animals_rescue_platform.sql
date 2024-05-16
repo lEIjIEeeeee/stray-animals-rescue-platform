@@ -67,6 +67,7 @@ CREATE TABLE `tbl_adopt_record`  (
   `id` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '领养记录id',
   `animal_id` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '宠物id',
   `status` int NULL DEFAULT NULL COMMENT '审核状态 1-待审核 2-审核通过 3-审核拒绝',
+  `reapply_flag` int NULL DEFAULT NULL COMMENT '是否重新提交申请 0-否 1-是',
   `contact_phone` varchar(45) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '联系电话',
   `remark` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL COMMENT '申请备注',
   `start_date` datetime NULL DEFAULT NULL COMMENT '领养开始日期',

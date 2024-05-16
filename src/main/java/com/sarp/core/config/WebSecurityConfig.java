@@ -34,6 +34,17 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter implements W
         EXCLUDED_URL_LIST.add("/doc.html");
         EXCLUDED_URL_LIST.add("/authModule/login/register");
         EXCLUDED_URL_LIST.add("/authModule/login/login");
+        EXCLUDED_URL_LIST.add("/animalModule/animal/listPage");
+        EXCLUDED_URL_LIST.add("/animalModule/animal/get");
+        EXCLUDED_URL_LIST.add("/commonModule/common/getCategoryTree");
+        EXCLUDED_URL_LIST.add("/postModule/post/listPage");
+        EXCLUDED_URL_LIST.add("/postModule/post/get");
+        EXCLUDED_URL_LIST.add("/commentModule/comment/listPage");
+        EXCLUDED_URL_LIST.add("/commentModule/comment/listPageReplay");
+        EXCLUDED_URL_LIST.add("/commentModule/comment/getCounts");
+        EXCLUDED_URL_LIST.add("/noticeModule/notice/listPage");
+        EXCLUDED_URL_LIST.add("/noticeModule/notice/get");
+        EXCLUDED_URL_LIST.add("/noticeModule/notice/getNoticeTypeDropdownList");
     }
 
     private CheckTokenFilter checkTokenFilter;
